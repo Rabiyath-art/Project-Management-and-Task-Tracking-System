@@ -1,13 +1,6 @@
 import type { Request, Response } from 'express';
-import { z } from 'zod';
 import prisma from '../../../config/prisma.js';
-
-const projectSchema = z.object({
-    name: z.string().trim().min(2).max(150),
-    description: z.string().trim().min(1).max(5000),
-    deadline: z.string().datetime().optional().nullable(),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
-});
+import { projectSchema } from '../../../models/project.schema.js';
 
 const updateProjectSchema = projectSchema.partial();
 
@@ -15,11 +8,7 @@ function canManageProjects(role: string) {
     return role === 'ADMIN' || role === 'PROJECT_MANAGER';
 }
 
-async function canAccessProject(
-    projectId: string,
-    userId: string,
-    role: string,
-) {
+async function canAccessProject(projectId: string, userId: string, role: string,) {
     if (role === 'ADMIN') return true;
 
     const project = await prisma.project.findFirst({
@@ -36,11 +25,7 @@ async function canAccessProject(
     return Boolean(project);
 }
 
-async function canManageProject(
-    projectId: any,
-    userId: string,
-    role: string,
-) {
+async function canManageProject(projectId: any, userId: string, role: string,) {
     if (role === 'ADMIN') return true;
     if (role !== 'PROJECT_MANAGER') return false;
 

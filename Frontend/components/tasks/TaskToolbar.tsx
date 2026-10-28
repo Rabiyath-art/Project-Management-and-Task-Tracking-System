@@ -1,3 +1,4 @@
+"use client";
 
 import { Columns3, LayoutGrid, List, Plus, Search, } from "lucide-react";
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskView, } from "@/types/task.types";
@@ -15,6 +16,9 @@ interface Props {
     filteredCount: number;
     totalCount: number;
 }
+
+const fieldClass =
+    "rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10";
 
 export default function TaskToolbar({
     search,
@@ -40,18 +44,20 @@ export default function TaskToolbar({
         ];
 
     return (
-        <section className="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-slate-100 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="overflow-visible rounded-2xl border border-border bg-card shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="relative w-full lg:max-w-sm">
                     <Search
                         size={18}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-muted"
                     />
+
                     <input
                         value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
+                        onChange={(event) => onSearchChange(event.target.value)}
                         placeholder="Search tasks, projects, assignees..."
-                        className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50"
+                        aria-label="Search tasks"
+                        className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10"
                     />
                 </div>
 
@@ -59,13 +65,13 @@ export default function TaskToolbar({
                     <select
                         aria-label="Filter by status"
                         value={status}
-                        onChange={(e) => onStatusChange(e.target.value)}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 outline-none focus:border-teal-500"
+                        onChange={(event) => onStatusChange(event.target.value)}
+                        className={fieldClass}
                     >
                         <option value="ALL">All statuses</option>
-                        {TASK_STATUSES.map((s) => (
-                            <option key={s.value} value={s.value}>
-                                {s.label}
+                        {TASK_STATUSES.map((item) => (
+                            <option key={item.value} value={item.value}>
+                                {item.label}
                             </option>
                         ))}
                     </select>
@@ -73,32 +79,33 @@ export default function TaskToolbar({
                     <select
                         aria-label="Filter by priority"
                         value={priority}
-                        onChange={(e) => onPriorityChange(e.target.value)}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 outline-none focus:border-teal-500"
+                        onChange={(event) => onPriorityChange(event.target.value)}
+                        className={fieldClass}
                     >
                         <option value="ALL">All priorities</option>
-                        {TASK_PRIORITIES.map((p) => (
-                            <option key={p.value} value={p.value}>
-                                {p.label}
+                        {TASK_PRIORITIES.map((item) => (
+                            <option key={item.value} value={item.value}>
+                                {item.label}
                             </option>
                         ))}
                     </select>
 
-                    <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
-                        {viewButtons.map((button) => {
-                            const Icon = button.icon;
+                    <div className="flex items-center rounded-xl border border-border bg-muted-background p-1">
+                        {viewButtons.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = view === item.value;
 
                             return (
                                 <button
-                                    key={button.value}
+                                    key={item.value}
                                     type="button"
-                                    title={button.label}
-                                    aria-label={button.label}
-                                    aria-pressed={view === button.value}
-                                    onClick={() => onViewChange(button.value)}
-                                    className={`rounded-lg p-2 transition ${view === button.value
-                                        ? "bg-white text-teal-700 shadow-sm ring-1 ring-slate-200"
-                                        : "text-slate-500 hover:bg-white hover:text-slate-700"
+                                    title={item.label}
+                                    aria-label={item.label}
+                                    aria-pressed={isActive}
+                                    onClick={() => onViewChange(item.value)}
+                                    className={`rounded-lg p-2 transition ${isActive
+                                        ? "bg-brand-primary text-white shadow-sm"
+                                        : "text-brand-muted hover:bg-card hover:text-brand-primary"
                                         }`}
                                 >
                                     <Icon size={17} />
@@ -110,7 +117,7 @@ export default function TaskToolbar({
                     <button
                         type="button"
                         onClick={onAdd}
-                        className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
+                        className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-3.5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                     >
                         <Plus size={17} />
                         Add Task
@@ -119,9 +126,11 @@ export default function TaskToolbar({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-brand-muted">
                     Showing{" "}
-                    <span className="font-semibold text-slate-800">{filteredCount}</span>{" "}
+                    <span className="font-semibold text-foreground">
+                        {filteredCount}
+                    </span>{" "}
                     of {totalCount} tasks
                 </p>
 
@@ -133,7 +142,7 @@ export default function TaskToolbar({
                             onStatusChange("ALL");
                             onPriorityChange("ALL");
                         }}
-                        className="text-sm font-medium text-teal-700 hover:text-teal-800"
+                        className="text-sm font-semibold text-brand-primary hover:underline"
                     >
                         Clear filters
                     </button>

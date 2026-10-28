@@ -6,22 +6,16 @@ const commentSchema = z.object({
     content: z.string().trim().min(1).max(3000),
 });
 
-async function canAccessTask(
-    taskId: string,
-    userId: string,
-    role: string,
-) {
+async function canAccessTask(taskId: string, userId: string, role: string,) {
     const task = await prisma.task.findFirst({
         where: {
             id: taskId,
-            project: role === 'ADMIN'
-                ? {}
-                : {
-                    OR: [
-                        { ownerId: userId },
-                        { members: { some: { userId } } },
-                    ],
-                },
+            project: role === 'ADMIN' ? {} : {
+                OR: [
+                    { ownerId: userId },
+                    { members: { some: { userId } } },
+                ],
+            },
         },
         select: { id: true },
     });

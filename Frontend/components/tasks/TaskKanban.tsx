@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -25,6 +24,13 @@ interface Props {
     onDelete: (task: Task) => void;
     onAdd: (status: TaskStatus) => void;
 }
+
+const dotColors: Record<TaskStatus, string> = {
+    TODO: "bg-brand-sage",
+    IN_PROGRESS: "bg-brand-primary",
+    IN_REVIEW: "bg-amber-600",
+    COMPLETED: "bg-sys-success",
+};
 
 export default function TaskKanban({
     tasks,
@@ -54,16 +60,13 @@ export default function TaskKanban({
         const task = tasks.find((item) => item.id === taskId);
         if (!task) return;
 
-        // A drop can land directly on a column or on another task card.
         const destinationTask = tasks.find((item) => item.id === overId);
 
         let destinationStatus: TaskStatus | undefined;
 
         if (destinationTask) {
             destinationStatus = destinationTask.status;
-        } else if (
-            TASK_STATUSES.some((status) => status.value === overId)
-        ) {
+        } else if (TASK_STATUSES.some((item) => item.value === overId)) {
             destinationStatus = overId as TaskStatus;
         }
 
@@ -105,6 +108,16 @@ export default function TaskKanban({
     );
 }
 
+interface KanbanColumnProps {
+    status: TaskStatus;
+    label: string;
+    tasks: Task[];
+    activeId: string | null;
+    onEdit: (task: Task) => void;
+    onDelete: (task: Task) => void;
+    onAdd: (status: TaskStatus) => void;
+}
+
 function KanbanColumn({
     status,
     label,
@@ -113,35 +126,24 @@ function KanbanColumn({
     onEdit,
     onDelete,
     onAdd,
-}: {
-    status: TaskStatus;
-    label: string;
-    tasks: Task[];
-    activeId: string | null;
-    onEdit: (task: Task) => void;
-    onDelete: (task: Task) => void;
-    onAdd: (status: TaskStatus) => void;
-}) {
+}: KanbanColumnProps) {
     const { setNodeRef, isOver } = useDroppable({ id: status });
-
-    const dotColors: Record<TaskStatus, string> = {
-        TODO: "bg-slate-400",
-        IN_PROGRESS: "bg-blue-500",
-        IN_REVIEW: "bg-violet-500",
-        COMPLETED: "bg-emerald-500",
-    };
 
     return (
         <section
             ref={setNodeRef}
-            className={`min-h-96 rounded-xl p-3 transition-colors ${isOver ? "bg-teal-50 ring-2 ring-inset ring-teal-300" : "bg-slate-50"
+            className={`min-h-96 rounded-xl border p-3 transition-colors ${isOver
+                ? "border-brand-primary bg-brand-beige/30 ring-2 ring-inset ring-brand-primary/20"
+                : "border-border bg-muted-background"
                 }`}
         >
             <div className="mb-4 flex items-center justify-between gap-2 px-1">
                 <div className="flex items-center gap-2">
                     <span className={`h-2.5 w-2.5 rounded-full ${dotColors[status]}`} />
-                    <h3 className="text-sm font-semibold text-slate-700">{label}</h3>
-                    <span className="rounded-md bg-white px-2 py-0.5 text-xs font-medium text-slate-500">
+
+                    <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+
+                    <span className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-brand-muted">
                         {tasks.length}
                     </span>
                 </div>
@@ -149,8 +151,9 @@ function KanbanColumn({
                 <button
                     type="button"
                     title={`Add task to ${label}`}
+                    aria-label={`Add task to ${label}`}
                     onClick={() => onAdd(status)}
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-teal-700"
+                    className="rounded-lg p-1.5 text-brand-muted transition hover:bg-card hover:text-brand-primary"
                 >
                     <Plus size={17} />
                 </button>
@@ -168,7 +171,7 @@ function KanbanColumn({
                 ))}
 
                 {tasks.length === 0 && (
-                    <div className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/70 px-3 text-center text-xs text-slate-400">
+                    <div className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-brand-sage bg-card/70 px-3 text-center text-xs text-brand-muted">
                         {isOver ? "Drop task here" : "No tasks in this column"}
                     </div>
                 )}
@@ -177,12 +180,20 @@ function KanbanColumn({
             <button
                 type="button"
                 onClick={() => onAdd(status)}
-                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 py-2.5 text-sm font-medium text-slate-500 transition hover:border-teal-400 hover:bg-white hover:text-teal-700"
+                className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-brand-sage py-2.5 text-sm font-medium text-brand-muted transition hover:border-brand-primary hover:bg-card hover:text-brand-primary"
             >
-                <Plus size={15} /> Add task
+                <Plus size={15} />
+                Add task
             </button>
         </section>
     );
+}
+
+interface DraggableTaskProps {
+    task: Task;
+    onEdit: (task: Task) => void;
+    onDelete: (task: Task) => void;
+    isActive: boolean;
 }
 
 function DraggableTask({
@@ -190,12 +201,7 @@ function DraggableTask({
     onEdit,
     onDelete,
     isActive,
-}: {
-    task: Task;
-    onEdit: (task: Task) => void;
-    onDelete: (task: Task) => void;
-    isActive: boolean;
-}) {
+}: DraggableTaskProps) {
     const {
         attributes,
         listeners,
@@ -208,7 +214,7 @@ function DraggableTask({
         <div
             ref={setNodeRef}
             style={{ transform: CSS.Translate.toString(transform) }}
-            className={`${isDragging ? "z-10 opacity-40" : ""}`}
+            className={isDragging ? "z-10 opacity-40" : ""}
         >
             <div className="mb-1 flex justify-end">
                 <button
@@ -217,7 +223,7 @@ function DraggableTask({
                     {...attributes}
                     aria-label={`Drag ${task.title}`}
                     title="Drag to change status"
-                    className="touch-none cursor-grab rounded-md p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 active:cursor-grabbing"
+                    className="touch-none cursor-grab rounded-md p-1 text-brand-muted transition hover:bg-brand-beige/60 hover:text-brand-primary active:cursor-grabbing"
                 >
                     <GripVertical size={17} />
                 </button>

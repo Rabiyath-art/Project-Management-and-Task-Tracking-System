@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type ReactNode } from "react";
@@ -13,7 +12,7 @@ export default function AppLayout({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-[#f7f8fc] text-slate-800">
+        <div className="min-h-screen bg-background text-foreground">
             <Sidebar
                 mobileMenuOpen={mobileMenuOpen}
                 onClose={() => setMobileMenuOpen(false)}

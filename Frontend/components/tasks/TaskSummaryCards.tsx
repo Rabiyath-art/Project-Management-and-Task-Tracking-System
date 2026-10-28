@@ -1,47 +1,41 @@
-
-import {
-    AlertCircle,
-    CheckCircle2,
-    ClipboardList,
-    Clock3,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, ClipboardList, Clock3, } from "lucide-react";
 import type { Task } from "@/types/task.types";
 
 export default function TaskSummaryCards({ tasks }: { tasks: Task[] }) {
+    const completedCount = tasks.filter(
+        (task) => task.status === "COMPLETED"
+    ).length;
+
     const summaries = [
         {
             title: "Total Tasks",
             value: tasks.length,
             note: "Across all projects",
             icon: ClipboardList,
-            color: "bg-teal-50 text-teal-700",
+            color: "bg-brand-beige/50 text-brand-primary",
         },
         {
             title: "In Progress",
-            value: tasks.filter((t) => t.status === "IN_PROGRESS").length,
+            value: tasks.filter((task) => task.status === "IN_PROGRESS").length,
             note: "Work underway",
             icon: Clock3,
-            color: "bg-blue-50 text-blue-700",
+            color: "bg-brand-sage/20 text-brand-primary",
         },
         {
             title: "In Review",
-            value: tasks.filter((t) => t.status === "IN_REVIEW").length,
+            value: tasks.filter((task) => task.status === "IN_REVIEW").length,
             note: "Waiting for review",
             icon: AlertCircle,
-            color: "bg-violet-50 text-violet-700",
+            color: "bg-muted-background text-brand-primary",
         },
         {
             title: "Completed",
-            value: tasks.filter((t) => t.status === "COMPLETED").length,
+            value: completedCount,
             note: tasks.length
-                ? `${Math.round(
-                    (tasks.filter((t) => t.status === "COMPLETED").length /
-                        tasks.length) *
-                    100
-                )}% of all tasks`
+                ? `${Math.round((completedCount / tasks.length) * 100)}% of all tasks`
                 : "No tasks yet",
             icon: CheckCircle2,
-            color: "bg-emerald-50 text-emerald-700",
+            color: "bg-sys-success-bg text-sys-success",
         },
     ];
 
@@ -51,25 +45,27 @@ export default function TaskSummaryCards({ tasks }: { tasks: Task[] }) {
                 const Icon = item.icon;
 
                 return (
-                    <div
+                    <article
                         key={item.title}
-                        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                        className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
                     >
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-medium text-slate-500">
+                                <p className="text-sm font-medium text-brand-muted">
                                     {item.title}
                                 </p>
-                                <p className="mt-2 text-2xl font-bold text-slate-900">
+                                <p className="mt-2 text-2xl font-bold tracking-tight text-foreground">
                                     {item.value}
                                 </p>
                             </div>
+
                             <div className={`rounded-xl p-3 ${item.color}`}>
                                 <Icon size={20} />
                             </div>
                         </div>
-                        <p className="mt-3 text-xs text-slate-400">{item.note}</p>
-                    </div>
+
+                        <p className="mt-3 text-xs text-brand-muted">{item.note}</p>
+                    </article>
                 );
             })}
         </div>

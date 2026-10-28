@@ -1,69 +1,39 @@
-
 "use client";
 
-import { useState } from "react";
-import {
-    LayoutDashboard,
-    FolderKanban,
-    CheckSquare,
-    Users,
-    Bell,
-    Settings,
-    Search,
-    Plus,
-    ChevronDown,
-    ArrowUpRight,
-    ArrowRight,
-    CalendarDays,
-    MoreHorizontal,
-    Clock3,
-    CircleCheck,
-    CircleDashed,
-    CircleDot,
-    Menu,
-    X,
-    Command,
-    Activity,
-    ChartNoAxesCombined,
-    CheckCircle2
-} from "lucide-react";
-import ProtectedPage from "@/components/layout/ProtectedPage";
-import AppLayout from "@/components/layout/AppLayout";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { FolderKanban, CheckSquare, Users, Search, Plus, ArrowRight, CalendarDays, MoreHorizontal, Clock3, CircleCheck, CircleDashed, CircleDot, Activity, CheckCircle2, } from "lucide-react";
+import { motion } from "motion/react";
 import StatCard from "@/components/dashboard/StatCard";
+import AppLayout from "@/components/layout/AppLayout";
 
 const projects = [
     {
         name: "Website Redesign",
         code: "PRJ-001",
-        description: "Redesign the customer-facing web experience",
         progress: 78,
         tasks: "18/23",
         due: "Oct 30, 2026",
         priority: "High",
-        color: "bg-violet-500",
-        initials: ["RK", "AM", "SJ"],
+        color: "bg-brand-primary",
     },
     {
         name: "Mobile Application",
         code: "PRJ-002",
-        description: "Develop the cross-platform mobile experience",
         progress: 52,
         tasks: "13/25",
         due: "Nov 08, 2026",
         priority: "Medium",
-        color: "bg-sky-500",
-        initials: ["AM", "DK"],
+        color: "bg-brand-sage",
     },
     {
         name: "CRM Dashboard",
         code: "PRJ-003",
-        description: "Internal customer relationship management tools",
         progress: 92,
         tasks: "23/25",
         due: "Nov 12, 2026",
         priority: "Low",
-        color: "bg-emerald-500",
-        initials: ["SJ", "RK", "DK"],
+        color: "bg-brand-beige",
     },
 ];
 
@@ -101,123 +71,163 @@ const tasks = [
 const activities = [
     {
         initials: "AM",
-        color: "bg-violet-100 text-violet-700",
-        text: "Alex Morgan",
+        name: "Alex Morgan",
         action: "completed a task in",
         project: "Website Redesign",
         time: "12 min ago",
     },
     {
         initials: "SJ",
-        color: "bg-sky-100 text-sky-700",
-        text: "Sarah Johnson",
+        name: "Sarah Johnson",
         action: "commented on",
         project: "Mobile Application",
         time: "38 min ago",
     },
     {
         initials: "DK",
-        color: "bg-amber-100 text-amber-700",
-        text: "David Kim",
+        name: "David Kim",
         action: "created a task in",
         project: "CRM Dashboard",
         time: "1 hour ago",
     },
 ];
 
-const navigation = [
-    { label: "Overview", icon: LayoutDashboard },
-    { label: "Projects", icon: FolderKanban, count: "12" },
-    { label: "My Tasks", icon: CheckSquare, count: "8" },
-    { label: "Team", icon: Users },
+const taskDistribution = [
+    { label: "To do", count: 24, color: "bg-brand-primary" },
+    { label: "In progress", count: 23, color: "bg-brand-sage" },
+    { label: "In review", count: 15, color: "bg-brand-beige" },
+    { label: "Completed", count: 24, color: "bg-sys-success" },
 ];
 
-function Avatar({
-    initials,
-    color = "bg-slate-200 text-slate-700",
-}: {
-    initials: string;
-    color?: string;
-}) {
+function Avatar({ initials }: { initials: string }) {
     return (
-        <div
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-semibold ${color}`}
-        >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-card bg-brand-beige text-xs font-semibold text-brand-primary">
             {initials}
         </div>
     );
 }
 
-function SectionTitle({
-    title,
-    subtitle,
-    action,
-}: {
+function SectionTitle({ title, subtitle, action, href }: {
     title: string;
     subtitle?: string;
     action?: string;
+    href?: string;
 }) {
     return (
         <div className="mb-5 flex items-center justify-between gap-3">
-            <div>
-                <h2 className="text-base font-semibold tracking-tight text-slate-900">
+            <div className="min-w-0">
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
                     {title}
                 </h2>
                 {subtitle && (
-                    <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+                    <p className="mt-1 text-xs leading-5 text-brand-muted">{subtitle}</p>
                 )}
             </div>
-            {action && (
-                <button className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-indigo-600 transition hover:text-indigo-800">
+
+            {action && href && (
+                <Link href={href} className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-brand-primary transition hover:text-brand-hover">
                     {action}
                     <ArrowRight size={14} />
-                </button>
+                </Link>
             )}
         </div>
     );
 }
 
+function getStatusIcon(status: string) {
+    switch (status) {
+        case "Completed":
+            return CircleCheck;
+        case "In Progress":
+            return CircleDot;
+        case "In Review":
+            return Clock3;
+        default:
+            return CircleDashed;
+    }
+}
+
+function getStatusIconClass(status: string) {
+    switch (status) {
+        case "Completed":
+            return "text-sys-success";
+        case "In Progress":
+            return "text-brand-primary";
+        case "In Review":
+            return "text-amber-700";
+        default:
+            return "text-brand-muted";
+    }
+}
+
+function getStatusBadgeClass(status: string) {
+    switch (status) {
+        case "Completed":
+            return "bg-sys-success-bg text-sys-success";
+        case "In Progress":
+            return "bg-hover-background text-brand-primary";
+        case "In Review":
+            return "bg-sys-warning-bg text-sys-warning";
+        default:
+            return "bg-muted-background text-brand-muted";
+    }
+}
+
+function getPriorityClass(priority: string) {
+    switch (priority) {
+        case "High":
+            return "bg-sys-danger-bg text-sys-danger";
+        case "Medium":
+            return "bg-sys-warning-bg text-sys-warning";
+        default:
+            return "bg-muted-background text-brand-muted";
+    }
+}
+
 export default function Home() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [search, setSearch] = useState("");
 
-    const filteredTasks = tasks.filter((task) =>
-        `${task.title} ${task.project} ${task.status}`
-            .toLowerCase()
-            .includes(search.toLowerCase())
+    const filteredTasks = useMemo(() => tasks.filter((task) =>
+        `${task.title} ${task.project} ${task.status}`.toLowerCase().includes(search.toLowerCase().trim())),
+        [search]
     );
 
     return (
-
-        // <ProtectedPage>
         <AppLayout>
             <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-8 xl:px-10">
                 <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                     <div>
-                        <div className="mb-2 flex items-center gap-2 text-xs text-slate-500">
+                        <div className="mb-2 flex items-center gap-2 text-xs text-brand-muted">
                             <CalendarDays size={14} />
-                            Tuesday, October 27, 2026
+                            Wednesday, October 28, 2026
                         </div>
-                        <h2 className="text-[26px] font-bold tracking-tight text-slate-950 sm:text-[30px]">
+
+                        <h2 className="text-[26px] font-bold tracking-tight text-foreground sm:text-[30px]">
                             Good morning, Rabiyath
                         </h2>
-                        <p className="mt-2 text-sm text-slate-500">
+
+                        <p className="mt-2 text-sm text-brand-muted">
                             Here&apos;s what&apos;s happening across your workspace today.
                         </p>
                     </div>
-                    <button className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-200 transition hover:bg-indigo-700 sm:self-auto">
+
+                    <Link href="/projects/new" className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-brand-primary px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-hover sm:self-auto">
                         <Plus size={16} />
                         Create project
-                    </button>
+                    </Link>
                 </div>
 
+                {/* Statt card */}
                 <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-                    <StatCard
-                        title="Total Projects"
-                        value={12}
-                        description="Projects across your workspace"
-                        icon={<FolderKanban size={21} />}
+                    <StatCard title="Total Projects" value={12} description="Projects across your workspace"
+                        icon={<motion.div
+                            whileHover={{ rotate: 12, scale: 1.1 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <FolderKanban size={21} />
+                        </motion.div>
+                        }
+                        iconClassName="bg-brand-beige text-brand-primary"
                     />
 
                     <StatCard
@@ -225,7 +235,7 @@ export default function Home() {
                         value={48}
                         description="Tasks marked as completed"
                         icon={<CheckCircle2 size={21} />}
-                        iconClassName="bg-emerald-50 text-emerald-600"
+                        iconClassName="bg-sys-success-bg text-sys-success"
                     />
 
                     <StatCard
@@ -233,7 +243,7 @@ export default function Home() {
                         value={16}
                         description="Tasks currently being worked on"
                         icon={<Clock3 size={21} />}
-                        iconClassName="bg-amber-50 text-amber-600"
+                        iconClassName="bg-hover-background text-brand-primary"
                     />
 
                     <StatCard
@@ -241,22 +251,24 @@ export default function Home() {
                         value={8}
                         description="Members in your workspace"
                         icon={<Users size={21} />}
-                        iconClassName="bg-sky-50 text-sky-600"
+                        iconClassName="bg-muted-background text-brand-primary"
                     />
                 </section>
 
+                {/* Projects and task distribution */}
                 <section className="mb-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
-                    <div className="min-w-0 rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+                    <div className="min-w-0 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
                         <SectionTitle
                             title="Active projects"
                             subtitle="Track progress across your current projects"
                             action="View all projects"
+                            href="/projects"
                         />
 
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[540px] text-left">
                                 <thead>
-                                    <tr className="border-y border-slate-100 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    <tr className="border-y border-border text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
                                         <th className="py-3 pr-4 font-semibold">Project</th>
                                         <th className="px-3 py-3 font-semibold">Progress</th>
                                         <th className="px-3 py-3 font-semibold">Due date</th>
@@ -264,11 +276,12 @@ export default function Home() {
                                         <th className="py-3 pl-3" />
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     {projects.map((project) => (
                                         <tr
                                             key={project.code}
-                                            className="border-b border-slate-100 last:border-0"
+                                            className="border-b border-border last:border-0"
                                         >
                                             <td className="py-4 pr-4">
                                                 <div className="flex items-center gap-3">
@@ -276,53 +289,53 @@ export default function Home() {
                                                         className={`h-9 w-1 shrink-0 rounded-full ${project.color}`}
                                                     />
                                                     <div className="min-w-0">
-                                                        <p className="whitespace-nowrap text-xs font-semibold text-slate-800">
+                                                        <p className="whitespace-nowrap text-xs font-semibold text-foreground">
                                                             {project.name}
                                                         </p>
-                                                        <p className="mt-1 text-[10px] text-slate-400">
+                                                        <p className="mt-1 text-[10px] text-brand-muted">
                                                             {project.code}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </td>
+
                                             <td className="px-3 py-4">
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted-background">
                                                         <div
                                                             className={`h-full rounded-full ${project.color}`}
                                                             style={{ width: `${project.progress}%` }}
                                                         />
                                                     </div>
-                                                    <span className="text-[10px] font-semibold text-slate-600">
+                                                    <span className="text-[10px] font-semibold text-foreground">
                                                         {project.progress}%
                                                     </span>
                                                 </div>
-                                                <p className="mt-1 text-[10px] text-slate-400">
+                                                <p className="mt-1 text-[10px] text-brand-muted">
                                                     {project.tasks} tasks
                                                 </p>
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-[10px] text-slate-500">
+
+                                            <td className="whitespace-nowrap px-3 py-4 text-[10px] text-brand-muted">
                                                 {project.due}
                                             </td>
+
                                             <td className="px-3 py-4">
                                                 <span
-                                                    className={`whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-medium ${project.priority === "High"
-                                                        ? "bg-rose-50 text-rose-700"
-                                                        : project.priority === "Medium"
-                                                            ? "bg-amber-50 text-amber-700"
-                                                            : "bg-slate-100 text-slate-600"
-                                                        }`}
+                                                    className={`whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-medium ${getPriorityClass(project.priority)}`}
                                                 >
                                                     {project.priority}
                                                 </span>
                                             </td>
+
                                             <td className="py-4 pl-3 text-right">
-                                                <button
-                                                    aria-label={`More options for ${project.name}`}
-                                                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100"
+                                                <Link
+                                                    href={`/projects/${project.code}`}
+                                                    aria-label={`View ${project.name}`}
+                                                    className="inline-flex rounded-md p-1 text-brand-muted transition hover:bg-hover-background hover:text-brand-primary"
                                                 >
                                                     <MoreHorizontal size={17} />
-                                                </button>
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
@@ -331,50 +344,49 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+                    <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
                         <SectionTitle
                             title="Task distribution"
                             subtitle="Overview of your task statuses"
                         />
 
-                        <div className="flex items-center gap-6 py-5">
+                        <div className="flex flex-col items-center gap-6 py-5 sm:flex-row">
                             <div
                                 className="relative flex h-32 w-32 shrink-0 items-center justify-center rounded-full"
                                 style={{
-                                    background:
-                                        "conic-gradient(#6366f1 0% 28%, #38bdf8 28% 55%, #fbbf24 55% 72%, #10b981 72% 100%)",
+                                    background: `conic-gradient( var(--primary) 0% 28%, var(--accent-sage) 28% 55%, var(--accent-beige) 55% 72%, var(--success) 72% 100% )`,
                                 }}
+                                aria-label="Task distribution chart"
                             >
-                                <div className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-full bg-white">
-                                    <span className="text-2xl font-bold tracking-tight text-slate-900">
+                                <div className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-full bg-card">
+                                    <span className="text-2xl font-bold tracking-tight text-foreground">
                                         86
                                     </span>
-                                    <span className="text-[10px] text-slate-400">Total tasks</span>
+                                    <span className="text-[10px] text-brand-muted">
+                                        Total tasks
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="min-w-0 flex-1 space-y-4">
-                                {[
-                                    { label: "To do", count: 24, color: "bg-indigo-500" },
-                                    { label: "In progress", count: 23, color: "bg-sky-400" },
-                                    { label: "In review", count: 15, color: "bg-amber-400" },
-                                    { label: "Completed", count: 24, color: "bg-emerald-500" },
-                                ].map((item) => (
+                            <div className="w-full min-w-0 flex-1 space-y-4">
+                                {taskDistribution.map((item) => (
                                     <div key={item.label}>
                                         <div className="mb-1.5 flex items-center justify-between gap-2">
                                             <div className="flex items-center gap-2">
                                                 <span
                                                     className={`h-2 w-2 rounded-full ${item.color}`}
                                                 />
-                                                <span className="text-[11px] text-slate-500">
+                                                <span className="text-[11px] text-brand-muted">
                                                     {item.label}
                                                 </span>
                                             </div>
-                                            <span className="text-[11px] font-semibold text-slate-800">
+
+                                            <span className="text-[11px] font-semibold text-foreground">
                                                 {item.count}
                                             </span>
                                         </div>
-                                        <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+
+                                        <div className="h-1 overflow-hidden rounded-full bg-muted-background">
                                             <div
                                                 className={`h-full rounded-full ${item.color}`}
                                                 style={{ width: `${(item.count / 86) * 100}%` }}
@@ -384,9 +396,13 @@ export default function Home() {
                                 ))}
                             </div>
                         </div>
-                        <div className="mt-2 flex items-center gap-2 rounded-lg bg-slate-50 p-3">
-                            <Activity size={16} className="text-indigo-600" />
-                            <p className="text-[11px] leading-5 text-slate-600">
+
+                        <div className="mt-2 flex items-start gap-2 rounded-lg bg-hover-background p-3">
+                            <Activity
+                                size={16}
+                                className="mt-0.5 shrink-0 text-brand-primary"
+                            />
+                            <p className="text-[11px] leading-5 text-brand-muted">
                                 Keep reviewing open tasks to maintain project momentum.
                             </p>
                         </div>
@@ -394,128 +410,121 @@ export default function Home() {
                 </section>
 
                 <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
-                    <div className="min-w-0 rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+                    <div className="min-w-0 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
                         <SectionTitle
                             title="My tasks"
                             subtitle="Tasks assigned to you across projects"
                             action="View all tasks"
+                            href="/tasks"
                         />
 
-                        <div className="mb-4 md:hidden">
-                            <label className="flex h-10 items-center gap-2 rounded-lg border border-slate-200 px-3">
-                                <Search size={15} className="text-slate-400" />
+                        <div className="mb-4">
+                            <label className="flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 transition focus-within:border-brand-primary">
+                                <Search size={15} className="shrink-0 text-brand-muted" />
                                 <input
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    onChange={(event) => setSearch(event.target.value)}
                                     placeholder="Search tasks..."
-                                    className="w-full bg-transparent text-xs outline-none"
+                                    aria-label="Search tasks"
+                                    className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-brand-muted"
                                 />
                             </label>
                         </div>
 
                         <div className="space-y-1">
                             {filteredTasks.map((task) => {
-                                const StatusIcon =
-                                    task.status === "Completed"
-                                        ? CircleCheck
-                                        : task.status === "In Progress"
-                                            ? CircleDot
-                                            : task.status === "In Review"
-                                                ? Clock3
-                                                : CircleDashed;
+                                const StatusIcon = getStatusIcon(task.status);
 
                                 return (
                                     <div
                                         key={task.title}
-                                        className="flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-slate-50 sm:px-3"
+                                        className="flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-hover-background sm:px-3"
                                     >
                                         <StatusIcon
                                             size={18}
-                                            className={
-                                                task.status === "Completed"
-                                                    ? "shrink-0 text-emerald-500"
-                                                    : task.status === "In Progress"
-                                                        ? "shrink-0 text-indigo-500"
-                                                        : task.status === "In Review"
-                                                            ? "shrink-0 text-amber-500"
-                                                            : "shrink-0 text-slate-300"
-                                            }
+                                            className={`shrink-0 ${getStatusIconClass(task.status)}`}
                                         />
+
                                         <div className="min-w-0 flex-1">
                                             <p
                                                 className={`truncate text-xs font-semibold ${task.status === "Completed"
-                                                    ? "text-slate-400 line-through"
-                                                    : "text-slate-800"
+                                                    ? "text-brand-muted line-through"
+                                                    : "text-foreground"
                                                     }`}
                                             >
                                                 {task.title}
                                             </p>
-                                            <p className="mt-1 truncate text-[10px] text-slate-400">
+                                            <p className="mt-1 truncate text-[10px] text-brand-muted">
                                                 {task.project}
                                             </p>
                                         </div>
+
                                         <div className="hidden sm:block">
                                             <span
-                                                className={`rounded-md px-2 py-1 text-[10px] font-medium ${task.status === "Completed"
-                                                    ? "bg-emerald-50 text-emerald-700"
-                                                    : task.status === "In Progress"
-                                                        ? "bg-indigo-50 text-indigo-700"
-                                                        : task.status === "In Review"
-                                                            ? "bg-amber-50 text-amber-700"
-                                                            : "bg-slate-100 text-slate-600"
-                                                    }`}
+                                                className={`whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-medium ${getStatusBadgeClass(task.status)}`}
                                             >
                                                 {task.status}
                                             </span>
                                         </div>
-                                        <div className="hidden min-w-[50px] text-right text-[10px] text-slate-500 md:block">
+
+                                        <div className="hidden min-w-[50px] text-right text-[10px] text-brand-muted md:block">
                                             {task.date}
                                         </div>
                                     </div>
                                 );
                             })}
+
                             {filteredTasks.length === 0 && (
-                                <p className="py-8 text-center text-xs text-slate-500">
-                                    No tasks match your search.
-                                </p>
+                                <div className="py-8 text-center">
+                                    <CheckSquare
+                                        size={24}
+                                        className="mx-auto mb-2 text-brand-sage"
+                                    />
+                                    <p className="text-xs font-medium text-foreground">
+                                        No tasks found
+                                    </p>
+                                    <p className="mt-1 text-[11px] text-brand-muted">
+                                        Try a different search term.
+                                    </p>
+                                </div>
                             )}
                         </div>
 
-                        <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 py-2.5 text-xs font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700">
+                        <Link
+                            href="/tasks"
+                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2.5 text-xs font-semibold text-brand-primary transition hover:border-brand-primary hover:bg-hover-background"
+                        >
                             <Plus size={15} />
-                            Add a task
-                        </button>
+                            View and manage tasks
+                        </Link>
                     </div>
 
-                    <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
-                        <SectionTitle
-                            title="Recent activity"
-                            subtitle="Latest updates from your team"
-                            action="View activity"
-                        />
+                    <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                        <SectionTitle title="Recent activity" subtitle="Latest updates from your team" />
 
                         <div className="relative">
-                            <div className="absolute bottom-7 left-4 top-5 w-px bg-slate-100" />
+                            <div className="absolute bottom-7 left-4 top-5 w-px bg-border" />
+
                             <div className="space-y-6">
                                 {activities.map((activity) => (
-                                    <div key={`${activity.text}-${activity.time}`} className="relative flex gap-3">
+                                    <div key={`${activity.name}-${activity.time}`} className="relative flex gap-3"
+                                    >
                                         <div className="relative z-10">
-                                            <Avatar
-                                                initials={activity.initials}
-                                                color={activity.color}
-                                            />
+                                            <Avatar initials={activity.initials} />
                                         </div>
+
                                         <div className="min-w-0 flex-1 pt-0.5">
-                                            <p className="text-xs leading-5 text-slate-600">
-                                                <span className="font-semibold text-slate-800">
-                                                    {activity.text}
+                                            <p className="text-xs leading-5 text-brand-muted">
+                                                <span className="font-semibold text-foreground">
+                                                    {activity.name}
                                                 </span>{" "}
                                                 {activity.action}{" "}
-                                                <span className="font-medium text-indigo-600">
+                                                <span className="font-medium text-brand-primary">
                                                     {activity.project}
                                                 </span>
                                             </p>
-                                            <p className="mt-1.5 text-[10px] text-slate-400">
+
+                                            <p className="mt-1.5 text-[10px] text-brand-muted">
                                                 {activity.time}
                                             </p>
                                         </div>
@@ -524,40 +533,43 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="mt-7 rounded-lg border border-slate-100 p-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                        <div className="mt-7 rounded-lg border border-border p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-beige text-brand-primary">
                                     <CalendarDays size={16} />
                                 </div>
+
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-800">
+                                    <p className="text-xs font-semibold text-foreground">
                                         Upcoming deadline
                                     </p>
-                                    <p className="mt-1 text-[10px] text-slate-500">
+                                    <p className="mt-1 text-[10px] text-brand-muted">
                                         Website Redesign · Oct 30
                                     </p>
                                 </div>
                             </div>
-                            <div className="mt-3 flex items-center justify-between">
-                                <span className="text-[10px] font-medium text-amber-700">
-                                    Due in 3 days
+
+                            <div className="mt-3 flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-medium text-sys-warning">
+                                    Due in 2 days
                                 </span>
-                                <button className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800">
+
+                                <Link href="/projects/PRJ-001" className="text-[10px] font-semibold text-brand-primary transition hover:text-brand-hover"
+                                >
                                     View project →
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <footer className="mt-8 flex flex-col justify-between gap-2 border-t border-slate-200/80 py-5 text-[10px] text-slate-400 sm:flex-row">
+                {/* Footer */}
+                <footer className="mt-8 flex flex-col justify-between gap-2 border-t border-border py-5 text-[10px] text-brand-muted sm:flex-row">
                     <p>© 2026 ProjectFlow. Project management made simple.</p>
                     <p>Workspace overview · Demo data</p>
                 </footer>
             </main>
         </AppLayout>
-
-        // {/* </ProtectedPage> */}
 
     );
 }

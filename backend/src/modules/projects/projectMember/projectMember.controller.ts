@@ -1,16 +1,8 @@
 import type { Request, Response } from 'express';
-import { z } from 'zod';
 import prisma from '../../../config/prisma.js';
+import { memberSchema } from '../../../models/project.schema.js';
 
-const memberSchema = z.object({
-    userId: z.string().min(1),
-});
-
-async function canManageMembership(
-    projectId: string,
-    userId: string,
-    role: string,
-) {
+async function canManageMembership(projectId: string, userId: string, role: string,) {
     if (role === 'ADMIN') return true;
     if (role !== 'PROJECT_MANAGER') return false;
 
@@ -23,10 +15,7 @@ async function canManageMembership(
 }
 
 // LIST MEMBERS
-export async function getProjectMembers(
-    req: Request,
-    res: Response,
-) {
+export async function getProjectMembers(req: Request, res: Response,) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;
 

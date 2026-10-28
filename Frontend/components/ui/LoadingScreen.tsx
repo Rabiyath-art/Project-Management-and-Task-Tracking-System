@@ -10,12 +10,15 @@ export default function LoadingScreen({
 }: LoadingScreenProps) {
     return (
         <div
-            className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50"
+            className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background"
             role="status"
             aria-live="polite"
         >
-            <LoaderCircle size={32} className="animate-spin text-indigo-600" />
-            <p className="text-sm font-medium text-slate-600">{message}</p>
+            <LoaderCircle
+                size={32}
+                className="animate-spin text-brand-primary"
+            />
+            <p className="text-sm font-medium text-brand-muted">{message}</p>
         </div>
     );
 }

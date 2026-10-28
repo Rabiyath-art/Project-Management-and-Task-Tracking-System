@@ -1,5 +1,5 @@
-
 import type { Task } from "@/types/task.types";
+import EmptyState from "@/components/ui/EmptyState";
 import TaskCard from "./TaskCard";
 
 interface Props {
@@ -11,9 +11,12 @@ interface Props {
 export default function TaskGrid({ tasks, onEdit, onDelete }: Props) {
     if (!tasks.length) {
         return (
-            <p className="p-12 text-center text-sm text-slate-500">
-                No tasks match your filters.
-            </p>
+            <div className="p-5">
+                <EmptyState
+                    title="No tasks found"
+                    description="No tasks match your current filters. Try changing your search or filters."
+                />
+            </div>
         );
     }
 

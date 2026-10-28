@@ -1,23 +1,11 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
 import prisma from '../../config/prisma.js';
-
-const registerSchema = z.object({
-    name: z.string().trim().min(2).max(100),
-    email: z.string().trim().email().transform((value) => value.toLowerCase()),
-    password: z.string().min(8).max(72),
-});
-
-const loginSchema = z.object({
-    email: z.string().trim().email().transform((value) => value.toLowerCase()),
-    password: z.string().min(1).max(72),
-});
+import { registerSchema, loginSchema } from '../../models/auth.schema.js';
 
 function createToken(userId: string, role: string) {
     const secret = process.env.JWT_SECRET;
-
     if (!secret || secret.length < 32) {
         throw new Error('JWT_SECRET must contain at least 32 characters');
     }

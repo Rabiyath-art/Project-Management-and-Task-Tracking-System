@@ -4,30 +4,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-    ArrowLeft,
-    CalendarDays,
-    CheckCircle2,
-    Clock3,
-    MessageSquare,
-    Send,
-    Trash2,
-    UserRound,
-    Activity as ActivityIcon,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MessageSquare, Send, Trash2, UserRound, Activity as ActivityIcon, } from "lucide-react";
 
 import { initialTasks } from "@/data/tasks";
-import {
-    TASK_PRIORITIES,
-    TASK_STATUSES,
-} from "@/types/task.types";
-import type {
-    Task,
-    TaskComment,
-    TaskActivity,
-    TaskStatus,
-    TaskPriority,
-} from "@/types/task.types";
+import { TASK_PRIORITIES, TASK_STATUSES, } from "@/types/task.types";
+import type { Task, TaskComment, TaskActivity, TaskStatus, TaskPriority, } from "@/types/task.types";
 import { taskWorkflowService } from "@/services/task-workflow.service";
 
 function formatDate(value: string) {
@@ -51,12 +32,7 @@ function formatDateTime(value: string) {
 }
 
 function getInitials(name: string) {
-    return name
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
+    return name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 }
 
 export default function TaskDetailsPage() {
@@ -95,12 +71,8 @@ export default function TaskDetailsPage() {
         setLoading(false);
     }, [taskId]);
 
-    const updateTask = (
-        field: "status" | "priority",
-        value: TaskStatus | TaskPriority
-    ) => {
+    const updateTask = (field: "status" | "priority", value: TaskStatus | TaskPriority) => {
         if (!task) return;
-
         const previousValue = task[field];
         if (previousValue === value) return;
 
@@ -108,21 +80,15 @@ export default function TaskDetailsPage() {
         setTask(updatedTask);
         taskWorkflowService.saveTask(updatedTask);
 
-        const label =
-            field === "status"
-                ? TASK_STATUSES.find((item) => item.value === value)?.label
-                : TASK_PRIORITIES.find((item) => item.value === value)?.label;
+        const label = field === "status"
+            ? TASK_STATUSES.find((item) => item.value === value)?.label
+            : TASK_PRIORITIES.find((item) => item.value === value)?.label;
 
-        const previousLabel =
-            field === "status"
-                ? TASK_STATUSES.find((item) => item.value === previousValue)?.label
-                : TASK_PRIORITIES.find((item) => item.value === previousValue)?.label;
+        const previousLabel = field === "status"
+            ? TASK_STATUSES.find((item) => item.value === previousValue)?.label
+            : TASK_PRIORITIES.find((item) => item.value === previousValue)?.label;
 
-        taskWorkflowService.addActivity(
-            taskId,
-            field === "status" ? "STATUS_CHANGED" : "PRIORITY_CHANGED",
-            `${field === "status" ? "Changed status" : "Changed priority"} from ${previousLabel} to ${label}`
-        );
+        taskWorkflowService.addActivity(taskId, field === "status" ? "STATUS_CHANGED" : "PRIORITY_CHANGED", `${field === "status" ? "Changed status" : "Changed priority"} from ${previousLabel} to ${label}`);
 
         refreshWorkflow();
         setFeedback("Task updated successfully.");
@@ -147,9 +113,7 @@ export default function TaskDetailsPage() {
     const handleDeleteComment = (comment: TaskComment) => {
         const confirmed = window.confirm("Delete this comment?");
         if (!confirmed) return;
-
         const deleted = taskWorkflowService.deleteComment(comment.id, taskId);
-
         if (!deleted) {
             setFeedback("You can only delete your own comments.");
             return;
@@ -320,8 +284,8 @@ export default function TaskDetailsPage() {
                             <button
                                 onClick={() => setActiveTab("comments")}
                                 className={`flex items-center gap-2 border-b-2 py-4 text-sm font-semibold ${activeTab === "comments"
-                                        ? "border-teal-600 text-teal-700"
-                                        : "border-transparent text-slate-500 hover:text-slate-800"
+                                    ? "border-teal-600 text-teal-700"
+                                    : "border-transparent text-slate-500 hover:text-slate-800"
                                     }`}
                             >
                                 <MessageSquare className="h-4 w-4" />
@@ -331,8 +295,8 @@ export default function TaskDetailsPage() {
                             <button
                                 onClick={() => setActiveTab("activity")}
                                 className={`flex items-center gap-2 border-b-2 py-4 text-sm font-semibold ${activeTab === "activity"
-                                        ? "border-teal-600 text-teal-700"
-                                        : "border-transparent text-slate-500 hover:text-slate-800"
+                                    ? "border-teal-600 text-teal-700"
+                                    : "border-transparent text-slate-500 hover:text-slate-800"
                                     }`}
                             >
                                 <Clock3 className="h-4 w-4" />
@@ -480,8 +444,8 @@ export default function TaskDetailsPage() {
                                     <div key={status.value} className="flex items-center gap-3">
                                         <div
                                             className={`flex h-6 w-6 items-center justify-center rounded-full ${isDone
-                                                    ? "bg-teal-600 text-white"
-                                                    : "border border-slate-300 text-slate-400"
+                                                ? "bg-teal-600 text-white"
+                                                : "border border-slate-300 text-slate-400"
                                                 }`}
                                         >
                                             {isDone ? (
@@ -492,8 +456,8 @@ export default function TaskDetailsPage() {
                                         </div>
                                         <span
                                             className={`text-sm ${status.value === task.status
-                                                    ? "font-semibold text-teal-700"
-                                                    : "text-slate-500"
+                                                ? "font-semibold text-teal-700"
+                                                : "text-slate-500"
                                                 }`}
                                         >
                                             {status.label}

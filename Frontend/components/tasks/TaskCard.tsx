@@ -1,10 +1,4 @@
-
-import {
-    CalendarDays,
-    FolderKanban,
-    MoreHorizontal,
-    UserRound,
-} from "lucide-react";
+import { CalendarDays, FolderKanban, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import type { Task } from "@/types/task.types";
 import TaskPriorityBadge from "./TaskPriorityBadge";
@@ -19,12 +13,7 @@ interface TaskCardProps {
 }
 
 export function getInitials(name: string) {
-    return name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0].toUpperCase())
-        .join("");
+    return name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join("");
 }
 
 export function formatTaskDate(date: string) {
@@ -52,13 +41,13 @@ export default function TaskCard({
 
     return (
         <article
-            className={`rounded-2xl border border-slate-200 bg-white p-4 transition ${isDragging
-                ? "rotate-1 border-teal-400 shadow-xl"
-                : "hover:border-teal-200 hover:shadow-sm"
+            className={`rounded-2xl border bg-card p-4 transition ${isDragging
+                ? "rotate-1 border-brand-primary shadow-xl"
+                : "border-border hover:border-brand-sage hover:shadow-sm"
                 }`}
         >
             <div className="flex items-start justify-between gap-2">
-                <span className="text-xs font-semibold tracking-wide text-slate-400">
+                <span className="text-xs font-semibold tracking-wide text-brand-muted">
                     {task.id}
                 </span>
 
@@ -68,34 +57,31 @@ export default function TaskCard({
                         onClick={() => onEdit(task)}
                         title="Edit task"
                         aria-label={`Edit ${task.title}`}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-teal-700"
+                        className="rounded-lg p-1.5 text-brand-muted transition hover:bg-hover-background hover:text-brand-primary"
                     >
                         <MoreHorizontal size={18} />
                     </button>
+
                     <button
                         type="button"
                         onClick={() => onDelete(task)}
                         title="Delete task"
                         aria-label={`Delete ${task.title}`}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                        className="rounded-lg p-1.5 text-brand-muted transition hover:bg-sys-danger-bg hover:text-sys-danger"
                     >
                         <span className="text-sm font-semibold">×</span>
                     </button>
                 </div>
             </div>
 
-            {/* <h3 className="mt-2 text-sm font-semibold leading-6 text-slate-800">
-                {task.title}
-            </h3> */}
-
             <Link
                 href={`/tasks/${encodeURIComponent(task.id)}`}
-                className="font-semibold text-slate-900 transition hover:text-teal-700"
+                className="mt-2 block font-semibold text-foreground transition hover:text-brand-primary"
             >
                 {task.title}
             </Link>
 
-            <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-slate-500">
+            <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-brand-muted">
                 {task.description || "No description provided."}
             </p>
 
@@ -104,33 +90,29 @@ export default function TaskCard({
                 <TaskPriorityBadge priority={task.priority} />
             </div>
 
-            <div className="mt-4 border-t border-slate-100 pt-3">
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <FolderKanban size={14} className="shrink-0 text-slate-400" />
+            <div className="mt-4 border-t border-border pt-3">
+                <div className="flex items-center gap-2 text-xs text-brand-muted">
+                    <FolderKanban size={14} className="shrink-0 text-brand-sage" />
                     <span className="truncate">{task.project}</span>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-50 text-[10px] font-bold text-teal-700">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-beige text-[10px] font-bold text-brand-primary">
                             {getInitials(task.assignee || "Unassigned")}
                         </span>
-                        <span className="truncate text-xs text-slate-600">
+                        <span className="truncate text-xs text-brand-muted">
                             {task.assignee || "Unassigned"}
                         </span>
                     </div>
 
                     <span
-                        className={`flex shrink-0 items-center gap-1 text-xs ${overdue ? "font-medium text-rose-600" : "text-slate-500"
+                        className={`flex shrink-0 items-center gap-1 text-xs ${overdue ? "font-medium text-sys-danger" : "text-brand-muted"
                             }`}
                     >
                         <CalendarDays size={13} />
                         {formatTaskDate(task.dueDate)}
                     </span>
-                </div>
-
-                <div className="sr-only">
-                    <UserRound />
                 </div>
             </div>
         </article>

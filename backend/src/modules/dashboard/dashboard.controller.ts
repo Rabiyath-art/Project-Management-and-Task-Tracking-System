@@ -1,10 +1,7 @@
 import type { Request, Response } from 'express';
 import prisma from '../../config/prisma.js';
 
-export async function getDashboard(
-    _req: Request,
-    res: Response,
-) {
+export async function getDashboard(_req: Request, res: Response,) {
     const { userId, role } = res.locals.authUser;
 
     try {
@@ -29,33 +26,15 @@ export async function getDashboard(
         });
 
         const projectIds = projects.map((project: { id: any; }) => project.id);
-
-        const taskWhere = {
-            projectId: { in: projectIds },
-            ...(role === 'MEMBER' ? { assigneeId: userId } : {}),
-        };
-
+        const taskWhere = { projectId: { in: projectIds }, ...(role === 'MEMBER' ? { assigneeId: userId } : {}), };
         const now = new Date();
 
-        const [
-            totalTasks,
-            completedTasks,
-            overdueTasks,
-            projectTaskGroups,
-            recentActivity,
-        ] = await Promise.all([
+        const [totalTasks, completedTasks, overdueTasks, projectTaskGroups, recentActivity] = await Promise.all([
             prisma.task.count({ where: taskWhere }),
+            prisma.task.count({ where: { ...taskWhere, status: 'COMPLETED' }, }),
 
             prisma.task.count({
-                where: { ...taskWhere, status: 'COMPLETED' },
-            }),
-
-            prisma.task.count({
-                where: {
-                    ...taskWhere,
-                    status: { not: 'COMPLETED' },
-                    dueDate: { lt: now },
-                },
+                where: { ...taskWhere, status: { not: 'COMPLETED' }, dueDate: { lt: now }, },
             }),
 
             prisma.task.groupBy({
@@ -87,18 +66,11 @@ export async function getDashboard(
         ]);
 
         const projectStatistics = projects.map((project: { id: any; name: any; priority: any; deadline: any; }) => {
-            const groups = projectTaskGroups.filter(
-                (group: { projectId: any; }) => group.projectId === project.id,
-            );
+            const groups = projectTaskGroups.filter((group: { projectId: any; }) => group.projectId === project.id,);
 
-            const total = groups.reduce(
-                (sum: any, group: { _count: { _all: any; }; }) => sum + group._count._all,
-                0,
-            );
+            const total = groups.reduce((sum: any, group: { _count: { _all: any; }; }) => sum + group._count._all, 0,);
 
-            const completed = groups
-                .filter((group: { status: string; }) => group.status === 'COMPLETED')
-                .reduce((sum: any, group: { _count: { _all: any; }; }) => sum + group._count._all, 0);
+            const completed = groups.filter((group: { status: string; }) => group.status === 'COMPLETED').reduce((sum: any, group: { _count: { _all: any; }; }) => sum + group._count._all, 0);
 
             return {
                 id: project.id,
@@ -107,9 +79,7 @@ export async function getDashboard(
                 deadline: project.deadline,
                 totalTasks: total,
                 completedTasks: completed,
-                completionPercentage: total === 0
-                    ? 0
-                    : Math.round((completed / total) * 100),
+                completionPercentage: total === 0 ? 0 : Math.round((completed / total) * 100),
             };
         });
 
@@ -120,9 +90,7 @@ export async function getDashboard(
                 totalTasks,
                 completedTasks,
                 overdueTasks,
-                completionPercentage: totalTasks === 0
-                    ? 0
-                    : Math.round((completedTasks / totalTasks) * 100),
+                completionPercentage: totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100),
                 projects: projectStatistics,
                 recentActivity,
             },

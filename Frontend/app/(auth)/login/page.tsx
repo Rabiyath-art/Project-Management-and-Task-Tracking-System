@@ -1,14 +1,17 @@
-
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, Command, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
+import {
+    ArrowUpRight,
+    Eye,
+    EyeOff,
+    LockKeyhole,
+    Mail,
+} from "lucide-react";
 import { authService } from "@/services/auth.service";
-
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -24,7 +27,7 @@ export default function LoginPage() {
         setError("");
 
         if (!email.trim() || !password) {
-            setError("Please enter your email and password.");
+            setError("Enter your email address and password.");
             return;
         }
 
@@ -37,7 +40,7 @@ export default function LoginPage() {
             });
 
             if (!result.token) {
-                setError("Login succeeded, but no token was returned by the server.");
+                setError("The server did not return an authentication token.");
                 return;
             }
 
@@ -50,47 +53,90 @@ export default function LoginPage() {
             router.replace("/");
         } catch (err: unknown) {
             const message =
-                typeof err === "object" &&
-                    err !== null &&
-                    "response" in err
+                typeof err === "object" && err !== null && "response" in err
                     ? (
                         err as {
-                            response?: {
-                                data?: { message?: string };
-                            };
+                            response?: { data?: { message?: string } };
                         }
                     ).response?.data?.message
                     : undefined;
 
-            setError(message || "Unable to sign in. Please check your credentials and try again.");
+            setError(message || "Sign-in failed. Please check your credentials.");
         } finally {
             setLoading(false);
         }
     }
 
+    const fieldClass =
+        "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-brand-muted focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10";
+
     return (
-        <main className="grid min-h-screen bg-white lg:grid-cols-2">
-            <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-10 lg:px-14 xl:px-20">
+        <main className="grid min-h-screen bg-background lg:grid-cols-[0.9fr_1.1fr]">
+            <aside className="relative hidden flex-col justify-between overflow-hidden bg-brand-primary p-10 text-white lg:flex xl:p-14">
+                <div className="absolute -right-24 top-1/3 h-72 w-72 rounded-full border border-white/10" />
+                <div className="absolute -right-12 top-[38%] h-48 w-48 rounded-full border border-white/10" />
+
+                <Link href="/login" className="relative z-10 flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg font-semibold">
+                        P
+                    </span>
+                    <span className="text-lg font-semibold tracking-tight">
+                        ProjectFlow
+                    </span>
+                </Link>
+
+                <div className="relative z-10 max-w-md">
+                    <p className="mb-5 text-xs font-semibold uppercase tracking-[0.22em] text-white/60">
+                        Your team's workspace
+                    </p>
+
+                    <h2 className="text-4xl font-semibold leading-[1.15] tracking-tight xl:text-5xl">
+                        Good work begins with a clear plan.
+                    </h2>
+
+                    <p className="mt-6 max-w-sm text-sm leading-7 text-white/70">
+                        Keep projects moving, make ownership clear, and bring everyday
+                        team collaboration into one organised space.
+                    </p>
+
+                    <div className="mt-10 border-t border-white/20 pt-5">
+                        <p className="text-xs uppercase tracking-wider text-white/50">
+                            Plan clearly. Work confidently.
+                        </p>
+                    </div>
+                </div>
+
+                <p className="relative z-10 text-xs text-white/50">
+                    © 2026 ProjectFlow
+                </p>
+            </aside>
+
+            <section className="flex min-h-screen items-center justify-center px-5 py-12 sm:px-10">
                 <div className="w-full max-w-[420px]">
-                    <Link href="/" className="mb-12 inline-flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
-                            <Command size={22} />
+                    <Link
+                        href="/login"
+                        className="mb-12 inline-flex items-center gap-3 lg:hidden"
+                    >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary text-lg font-semibold text-white">
+                            P
                         </span>
-                        <span className="text-xl font-bold tracking-tight text-slate-950">
+                        <span className="text-lg font-semibold text-foreground">
                             ProjectFlow
                         </span>
                     </Link>
 
-                    <div className="mb-8">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
-                            Welcome back
-                        </p>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                            Sign in to your workspace
+                    <div className="mb-9">
+                        <div className="mb-5 flex items-center gap-2 text-xs font-medium text-brand-muted">
+                            <span className="h-px w-7 bg-brand-primary" />
+                            WORKSPACE ACCESS
+                        </div>
+
+                        <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-[34px]">
+                            Welcome back.
                         </h1>
-                        <p className="mt-3 text-sm leading-6 text-slate-500">
-                            Manage projects, collaborate with your team, and keep every task
-                            moving forward.
+
+                        <p className="mt-3 text-sm leading-6 text-brand-muted">
+                            Sign in to pick up where your team left off.
                         </p>
                     </div>
 
@@ -98,147 +144,70 @@ export default function LoginPage() {
                         <div>
                             <label
                                 htmlFor="email"
-                                className="mb-2 block text-sm font-medium text-slate-700"
+                                className="mb-2 block text-sm font-medium text-foreground"
                             >
                                 Email address
                             </label>
-                            <div className="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-3.5 transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-50">
-                                <Mail size={18} className="text-slate-400" />
-                                <Input
-                                    label="Email address"
-                                    name="email"
-                                    type="email"
-                                    placeholder="you@company.com"
-                                    autoComplete="email"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.target.value)}
-                                    icon={<Mail size={17} />}
-                                    required
+
+                            <div className="relative">
+                                <Mail
+                                    size={17}
+                                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-muted"
+                                />
+                                <input id="email" name="email" type="email" autoComplete="email" placeholder="rabi@gmail.com" value={email} onChange={(event) => setEmail(event.target.value)} required
+                                    className={`${fieldClass} pl-10`}
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <div className="mb-2 flex items-center justify-between">
-                                <label
-                                    htmlFor="password"
-                                    className="text-sm font-medium text-slate-700"
-                                >
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                                <label htmlFor="password" className="text-sm font-medium text-foreground">
                                     Password
                                 </label>
                             </div>
 
-                            <div className="flex h-12 items-center gap-3 rounded-lg border border-slate-200 px-3.5 transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-50">
-                                <LockKeyhole size={18} className="text-slate-400" />
-                                <input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    autoComplete="current-password"
-                                    value={password}
-                                    onChange={(event) => setPassword(event.target.value)}
-                                    placeholder="Enter your password"
-                                    required
-                                    className="h-full w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                            <div className="relative">
+                                <LockKeyhole size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-muted" />
+                                <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="Enter your password" value={password} onChange={(event) => setPassword(event.target.value)} required
+                                    className={`${fieldClass} pl-10 pr-12`}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    aria-label={showPassword ? "Hide password" : "Show password"}
-                                    className="text-slate-400 transition hover:text-slate-700"
+                                <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-muted transition hover:text-brand-primary"
                                 >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                 </button>
                             </div>
                         </div>
 
                         {error && (
-                            <div
-                                role="alert"
-                                className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-                            >
+                            <div role="alert" className="rounded-xl border border-sys-danger/20 bg-sys-danger-bg px-4 py-3 text-sm text-sys-danger">
                                 {error}
                             </div>
                         )}
 
-                        <Button type="submit" fullWidth loading={loading}>
-                            {loading ? "Signing in..." : "Sign in"}
-                            {!loading && <ArrowRight size={17} />}
+                        <Button type="submit" fullWidth loading={loading} className="!rounded-xl !py-3">
+                            {loading ? "Signing in..." : "Sign in to workspace"}
+                            {!loading && <ArrowUpRight size={17} />}
                         </Button>
                     </form>
 
-                    <p className="mt-7 text-center text-sm text-slate-500">
-                        Don&apos;t have an account?{" "}
-                        <Link
-                            href="/register"
-                            className="font-semibold text-indigo-600 hover:text-indigo-800"
-                        >
-                            Create account
-                        </Link>
-                    </p>
-
-                    <p className="mt-12 text-center text-xs text-slate-400">
-                        © 2026 ProjectFlow. All rights reserved.
-                    </p>
-                </div>
-            </section>
-
-            <section className="relative hidden overflow-hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between xl:p-16">
-                <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-indigo-600/30 blur-3xl" />
-                <div className="absolute -bottom-24 -left-20 h-80 w-80 rounded-full bg-violet-600/20 blur-3xl" />
-
-                <div className="relative z-10 flex items-center gap-2 text-sm font-medium text-slate-300">
-                    <CheckCircle2 size={17} className="text-indigo-400" />
-                    Your work, organized.
-                </div>
-
-                <div className="relative z-10 max-w-lg">
-                    <div className="mb-6 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-indigo-200">
-                        ONE WORKSPACE. CLEAR PROGRESS.
+                    <div className="my-8 flex items-center gap-4">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs text-brand-muted">NEW TO PROJECTFLOW?</span>
+                        <div className="h-px flex-1 bg-border" />
                     </div>
-                    <h2 className="text-4xl font-semibold leading-tight tracking-tight xl:text-5xl">
-                        Great work starts with a team that&apos;s in sync.
-                    </h2>
-                    <p className="mt-6 max-w-md text-sm leading-7 text-slate-400">
-                        Bring projects, tasks, conversations, and progress together.
-                        Spend less time chasing updates and more time getting work done.
+
+                    <Link
+                        href="/register"
+                        className="flex w-full items-center justify-center rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition hover:border-brand-primary hover:bg-hover-background"
+                    >
+                        Create an account
+                    </Link>
+
+                    <p className="mt-10 text-center text-xs leading-5 text-brand-muted">
+                        By continuing, you agree to use this workspace responsibly.
                     </p>
-
-                    <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-slate-400">Workspace overview</p>
-                                <p className="mt-1 text-sm font-semibold">Project progress</p>
-                            </div>
-                            <span className="rounded-md bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                                On track
-                            </span>
-                        </div>
-                        <div className="mt-5 space-y-4">
-                            {[
-                                { name: "Website Redesign", progress: 78, color: "bg-indigo-400" },
-                                { name: "Mobile Application", progress: 52, color: "bg-sky-400" },
-                                { name: "CRM Dashboard", progress: 92, color: "bg-emerald-400" },
-                            ].map((project) => (
-                                <div key={project.name}>
-                                    <div className="mb-2 flex justify-between text-xs">
-                                        <span className="text-slate-300">{project.name}</span>
-                                        <span className="text-slate-400">{project.progress}%</span>
-                                    </div>
-                                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                                        <div
-                                            className={`h-full rounded-full ${project.color}`}
-                                            style={{ width: `${project.progress}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
                 </div>
-
-                <p className="relative z-10 text-xs text-slate-500">
-                    A clearer view of work. A better way to collaborate.
-                </p>
             </section>
         </main>
     );
