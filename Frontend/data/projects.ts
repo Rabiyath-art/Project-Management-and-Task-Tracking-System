@@ -1,0 +1,123 @@
+
+import type { Project, ProjectMember } from "@/types/project.types";
+
+export const demoMembers: ProjectMember[] = [
+    {
+        id: "u1",
+        name: "Rabiyath Beevi",
+        email: "rabiyath@example.com",
+        role: "ADMIN",
+        avatarColor: "bg-violet-100 text-violet-700",
+    },
+    {
+        id: "u2",
+        name: "Arun Kumar",
+        email: "arun@example.com",
+        role: "PROJECT_MANAGER",
+        avatarColor: "bg-sky-100 text-sky-700",
+    },
+    {
+        id: "u3",
+        name: "Priya S",
+        email: "priya@example.com",
+        role: "MEMBER",
+        avatarColor: "bg-emerald-100 text-emerald-700",
+    },
+    {
+        id: "u4",
+        name: "Mohamed Ali",
+        email: "mohamed@example.com",
+        role: "MEMBER",
+        avatarColor: "bg-amber-100 text-amber-700",
+    },
+    {
+        id: "u5",
+        name: "Kavitha R",
+        email: "kavitha@example.com",
+        role: "MEMBER",
+        avatarColor: "bg-pink-100 text-pink-700",
+    },
+];
+
+export const initialProjects: Project[] = [
+    {
+        id: "PRJ-001",
+        name: "Customer Portal Redesign",
+        description:
+            "Redesign the customer experience with a responsive interface and improved navigation.",
+        status: "IN_PROGRESS",
+        priority: "HIGH",
+        startDate: "2026-10-01",
+        deadline: "2026-11-20",
+        progress: 68,
+        members: [demoMembers[0], demoMembers[1], demoMembers[2]],
+        taskCount: 24,
+        completedTaskCount: 16,
+        archived: false,
+        createdAt: "2026-10-01",
+    },
+    {
+        id: "PRJ-002",
+        name: "Inventory Management",
+        description:
+            "Build inventory tracking, stock alerts, and reporting for internal operations.",
+        status: "IN_PROGRESS",
+        priority: "URGENT",
+        startDate: "2026-09-15",
+        deadline: "2026-11-05",
+        progress: 42,
+        members: [demoMembers[1], demoMembers[3]],
+        taskCount: 31,
+        completedTaskCount: 13,
+        archived: false,
+        createdAt: "2026-09-15",
+    },
+    {
+        id: "PRJ-003",
+        name: "Marketing Website",
+        description:
+            "Launch a modern marketing website with accessible pages and SEO-friendly content.",
+        status: "PLANNING",
+        priority: "MEDIUM",
+        startDate: "2026-10-28",
+        deadline: "2026-12-10",
+        progress: 8,
+        members: [demoMembers[0], demoMembers[4]],
+        taskCount: 15,
+        completedTaskCount: 1,
+        archived: false,
+        createdAt: "2026-10-20",
+    },
+    {
+        id: "PRJ-004",
+        name: "Mobile App API",
+        description:
+            "Develop and document REST APIs for the upcoming mobile application.",
+        status: "ON_HOLD",
+        priority: "LOW",
+        startDate: "2026-08-01",
+        deadline: "2026-10-15",
+        progress: 35,
+        members: [demoMembers[1], demoMembers[2], demoMembers[3]],
+        taskCount: 20,
+        completedTaskCount: 7,
+        archived: false,
+        createdAt: "2026-08-01",
+    },
+    {
+        id: "PRJ-005",
+        name: "Internal HR Dashboard",
+        description:
+            "Centralize employee records, leave requests, and internal reporting.",
+        status: "COMPLETED",
+        priority: "MEDIUM",
+        startDate: "2026-07-01",
+        deadline: "2026-09-30",
+        progress: 100,
+        members: [demoMembers[0], demoMembers[2], demoMembers[4]],
+        taskCount: 18,
+        completedTaskCount: 18,
+        archived: false,
+        createdAt: "2026-07-01",
+    },
+];
