@@ -1,11 +1,5 @@
 
-import type {
-    Task,
-    TaskComment,
-    TaskActivity,
-    TaskActivityType,
-} from "@/types/task.types";
-
+import type { Task, TaskComment, TaskActivity, TaskActivityType, } from "@/types/task.types";
 const COMMENTS_KEY = "pm_task_comments";
 const ACTIVITY_KEY = "pm_task_activity";
 const TASKS_KEY = "pm_tasks";

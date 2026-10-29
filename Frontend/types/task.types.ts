@@ -9,12 +9,15 @@ export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export type TaskView = "table" | "grid" | "kanban";
 
+
 export interface Task {
     id: string;
     title: string;
     description: string;
     project: string;
+    projectId: string;
     assignee: string;
+    assigneeId: string | null;
     status: TaskStatus;
     priority: TaskPriority;
     dueDate: string;
@@ -24,7 +27,9 @@ export interface TaskFormValues {
     title: string;
     description: string;
     project: string;
+    projectId: string;
     assignee: string;
+    assigneeId: string | null;
     status: TaskStatus;
     priority: TaskPriority;
     dueDate: string;
@@ -58,6 +63,8 @@ export const EMPTY_TASK_FORM: TaskFormValues = {
     status: "TODO",
     priority: "MEDIUM",
     dueDate: "",
+    projectId: "",
+    assigneeId: null
 };
 
 // For comment

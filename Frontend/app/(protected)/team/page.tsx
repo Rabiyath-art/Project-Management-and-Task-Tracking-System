@@ -8,6 +8,7 @@ import TeamTable from "@/components/team/TeamTable";
 import TeamMemberModal from "@/components/team/TeamMemberModal";
 import { teamService } from "@/services/team.service";
 import type { MemberStatus, TeamMember, TeamMemberFormValues, TeamRole } from "@/types/team.types";
+import { userService } from "@/services/user.service";
 
 type ModalMode = "create" | "edit" | "view";
 const PAGE_SIZE = 10;
@@ -25,8 +26,42 @@ export default function TeamPage() {
     const [feedbackType, setFeedbackType] = useState<"success" | "error">("success");
 
     useEffect(() => {
-        setMembers(teamService.getAll());
-        setIsReady(true);
+        let active = true;
+
+        async function loadMembers() {
+            try {
+                const users = await userService.getAll();
+
+                if (!active) return;
+
+                const teamMembers: TeamMember[] = users.map((user) => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    status: "ACTIVE",
+                    projectsCount: 0,
+                    joinedAt: "",
+                }));
+
+                setMembers(teamMembers);
+            } catch (error) {
+                console.error("Failed to load team members:", error);
+
+                if (active) {
+                    setFeedback("Unable to load team members from the server.");
+                    setFeedbackType("error");
+                }
+            } finally {
+                if (active) setIsReady(true);
+            }
+        }
+
+        void loadMembers();
+
+        return () => {
+            active = false;
+        };
     }, []);
 
     const filteredMembers = useMemo(() => {
@@ -135,13 +170,6 @@ export default function TeamPage() {
         <main className="min-h-screen bg-background px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <div className="flex items-center gap-2 text-sm text-brand-muted">
-                        <Users className="h-4 w-4" />
-                        Workspace
-                        <span>/</span>
-                        <span className="font-medium text-foreground">Team Members</span>
-                    </div>
-
                     <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                         Team Members
                     </h1>

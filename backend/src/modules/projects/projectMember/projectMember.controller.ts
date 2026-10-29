@@ -4,7 +4,6 @@ import { memberSchema } from '../../../models/project.schema.js';
 
 async function canManageMembership(projectId: string, userId: string, role: string,) {
     if (role === 'ADMIN') return true;
-    if (role !== 'PROJECT_MANAGER') return false;
 
     const project = await prisma.project.findFirst({
         where: { id: projectId, ownerId: userId },
@@ -14,7 +13,7 @@ async function canManageMembership(projectId: string, userId: string, role: stri
     return Boolean(project);
 }
 
-// LIST MEMBERS
+// li`st member
 export async function getProjectMembers(req: Request, res: Response,) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;

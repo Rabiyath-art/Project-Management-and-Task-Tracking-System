@@ -1,67 +1,89 @@
 
-// import api from "@/services/api";
-// import type {
-//     CreateProjectRequest,
-//     Project,
-//     ProjectListResponse,
-//     ProjectResponse,
-//     UpdateProjectRequest,
-// } from "@/types/project.types";
+import api from "@/services/api";
+import type {
+    CreateProjectRequest, Project, ProjectApiResponse, ProjectListApiResponse, UpdateProjectRequest,
+} from "@/types/project.types";
 
-// export const projectService = {
-//     async getAll(params?: {
-//         search?: string;
-//         status?: string;
-//         priority?: string;
-//         page?: number;
-//         limit?: number;
-//     }): Promise<ProjectListResponse> {
-//         const response = await api.get<ProjectListResponse>("/projects", {
-//             params,
-//         });
+function mapProject(raw: Record<string, any>): Project {
+    const apiMembers = Array.isArray(raw.members) ? raw.members : [];
 
-//         return response.data;
-//     },
+    const members = apiMembers.map((item: any) => {
+        const user = item.user ?? item;
 
-//     async getById(id: string): Promise<Project> {
-//         const response = await api.get<ProjectResponse>(
-//             `/projects/${encodeURIComponent(id)}`
-//         );
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        };
+    });
 
-//         return response.data.project;
-//     },
+    return {
+        id: raw.id,
+        name: raw.name,
+        description: raw.description ?? "",
+        status: raw.status ?? "PLANNING",
+        priority: raw.priority ?? "MEDIUM",
+        startDate: raw.startDate ?? raw.createdAt ?? "",
+        deadline: raw.deadline ?? "",
+        progress: raw.progress ?? 0,
+        members,
+        taskCount: raw._count?.tasks ?? raw.taskCount ?? 0,
+        completedTaskCount: raw.completedTaskCount ?? 0,
+        archived: raw.isArchived ?? raw.archived ?? false,
+        createdAt: raw.createdAt ?? "",
+    };
+}
 
-//     async create(data: CreateProjectRequest): Promise<Project> {
-//         const response = await api.post<ProjectResponse>("/projects", data);
+export const projectService = {
+    async getAll(): Promise<Project[]> {
+        const response = await api.get<ProjectListApiResponse>("/projects");
+        return response.data.data.projects.map(mapProject);
+    },
 
-//         return response.data.project;
-//     },
+    async getById(id: string): Promise<Project> {
+        const response = await api.get<ProjectApiResponse>(
+            `/projects/${encodeURIComponent(id)}`,
+        );
 
-//     async update(
-//         id: string,
-//         data: UpdateProjectRequest
-//     ): Promise<Project> {
-//         const response = await api.put<ProjectResponse>(
-//             `/projects/${encodeURIComponent(id)}`,
-//             data
-//         );
+        return mapProject(response.data.data.project);
+    },
 
-//         return response.data.project;
-//     },
+    async create(data: CreateProjectRequest): Promise<Project> {
+        const response = await api.post<ProjectApiResponse>("/projects", data);
+        return mapProject(response.data.data.project);
+    },
 
-//     async archive(id: string): Promise<void> {
-//         await api.patch(
-//             `/projects/${encodeURIComponent(id)}/archive`
-//         );
-//     },
+    async update(
+        id: string,
+        data: UpdateProjectRequest,
+    ): Promise<Project> {
+        const response = await api.patch<ProjectApiResponse>(
+            `/projects/${encodeURIComponent(id)}`,
+            data,
+        );
 
-//     async addMember(projectId: string, userId: string): Promise<void> {
-//         await api.post(`/projects/${encodeURIComponent(projectId)}/members`, { userId }
-//         );
-//     },
+        return mapProject(response.data.data.project);
+    },
 
-//     async removeMember(projectId: string, userId: string): Promise<void> {
-//         await api.delete(`/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`
-//         );
-//     },
-// };
+    async archive(id: string): Promise<void> {
+        await api.patch(`/projects/${encodeURIComponent(id)}/archive`);
+    },
+
+    async addMember(projectId: string, userId: string): Promise<void> {
+        await api.post(
+            `/projects/${encodeURIComponent(projectId)}/members`,
+            { userId },
+        );
+    },
+
+    async removeMember(projectId: string, userId: string): Promise<void> {
+        await api.delete(
+            `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`,
+        );
+    },
+
+    async delete(projectId: string): Promise<void> {
+        await api.delete(`/projects/${projectId}`);
+    }
+};

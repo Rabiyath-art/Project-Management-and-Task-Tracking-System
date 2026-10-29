@@ -1,42 +1,74 @@
+
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, FolderPlus } from "lucide-react";
+import axios from "axios";
+
 import Button from "@/components/ui/Button";
 import ProjectForm from "@/components/projects/ProjectForm";
+import { projectService } from "@/services/project.service";
 import type { ProjectFormValues } from "@/types/project.types";
 
 export default function NewProjectPage() {
     const router = useRouter();
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
 
-    function handleCreate(values: ProjectFormValues) {
-        router.push("/projects");
+    async function handleCreate(values: ProjectFormValues) {
+        try {
+            setSaving(true);
+            setError("");
+
+            const project = await projectService.create({
+                name: values.name,
+                description: values.description,
+                priority: values.priority,
+                deadline: values.deadline
+                    ? new Date(`${values.deadline}T00:00:00.000Z`).toISOString()
+                    : null,
+            });
+
+            router.push(`/projects/${project.id}`);
+        } catch (err) {
+            console.error("Create project failed:", err);
+            setError("Unable to create project. Check your permissions and try again.");
+        } finally {
+            setSaving(false);
+        }
     }
 
     return (
-        <main className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-4xl">
-                <Button variant="outline" onClick={() => router.push("/projects")} className="mb-6">
-                    <ArrowLeft size={16} />
+        <main className="min-h-screen bg-background">
+            <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6 lg:p-8">
+                <Button variant="outline" onClick={() => router.push("/projects")}>
+                    <ArrowLeft size={17} />
                     Back to projects
                 </Button>
 
-                <div className="mb-7 flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary text-white">
-                        <FolderPlus size={23} />
-                    </div>
-
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                            Create a project
+                <div>
+                    <div className="flex items-center gap-3">
+                        <FolderPlus size={26} className="text-brand-primary" />
+                        <h1 className="text-2xl font-bold text-foreground">
+                            Create project
                         </h1>
-                        <p className="mt-2 text-sm leading-6 text-brand-muted">
-                            Define the project details, timeline, priority, and team members.
-                        </p>
                     </div>
+                    <p className="mt-2 text-sm text-brand-muted">
+                        Set up a project and organize your work.
+                    </p>
                 </div>
 
-                <ProjectForm onSubmit={handleCreate} onCancel={() => router.push("/projects")}
+                {error && (
+                    <p role="alert" className="rounded-xl bg-sys-danger-bg p-3 text-sm text-sys-danger">
+                        {error}
+                    </p>
+                )}
+
+                <ProjectForm
+                    onSubmit={handleCreate}
+                    onCancel={() => router.push("/projects")}
+                    submitting={saving}
                 />
             </div>
         </main>

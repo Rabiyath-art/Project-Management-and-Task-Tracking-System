@@ -4,9 +4,7 @@ import { useState, type ReactNode } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
-export default function AppLayout({
-    children,
-}: {
+export default function AppLayout({ children}: {
     children: ReactNode;
 }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

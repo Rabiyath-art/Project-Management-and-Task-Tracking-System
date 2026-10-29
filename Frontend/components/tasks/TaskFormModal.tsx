@@ -2,13 +2,11 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
-import {
-    EMPTY_TASK_FORM,
-    TASK_PRIORITIES,
-    TASK_STATUSES,
-    type Task,
-    type TaskFormValues,
-} from "@/types/task.types";
+
+import { EMPTY_TASK_FORM, TASK_PRIORITIES, TASK_STATUSES, type Task, type TaskFormValues } from "@/types/task.types";
+import type { Project, ProjectMember } from "@/types/project.types";
+import { projectService } from "@/services/project.service";
+import { userService } from "@/services/user.service";
 
 interface Props {
     open: boolean;
@@ -19,39 +17,78 @@ interface Props {
 }
 
 const fieldClass =
-    "w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none transition placeholder:text-brand-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10";
+    "w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-foreground";
 
-export default function TaskFormModal({
-    open,
-    task,
-    initialStatus,
-    onClose,
-    onSubmit,
-}: Props) {
+export default function TaskFormModal({ open, task, initialStatus, onClose, onSubmit }: Props) {
     const [form, setForm] = useState<TaskFormValues>(EMPTY_TASK_FORM);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [users, setUsers] = useState<ProjectMember[]>([]);
+    const [loadingOptions, setLoadingOptions] = useState(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
         if (!open) return;
+        let active = true;
 
-        setForm(
-            task
-                ? {
-                    title: task.title,
-                    description: task.description,
-                    project: task.project,
-                    assignee: task.assignee,
-                    status: task.status,
-                    priority: task.priority,
-                    dueDate: task.dueDate,
+        async function loadOptions() {
+            setLoadingOptions(true);
+            setError("");
+
+            try {
+                const [projectList, userList] = await Promise.all([
+                    projectService.getAll(),
+                    userService.getAll(),
+                ]);
+
+                if (!active) return;
+
+                setProjects(projectList);
+                setUsers(userList);
+            } catch (err) {
+                console.error("Failed to load task form options:", err);
+
+                if (active) {
+                    setError("Unable to load projects or users. Please try again.");
                 }
-                : {
-                    ...EMPTY_TASK_FORM,
-                    status: initialStatus ?? "TODO",
-                }
-        );
+            } finally {
+                if (active) setLoadingOptions(false);
+            }
+        }
+
+        void loadOptions();
+
+        return () => {
+            active = false;
+        };
+    }, [open]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        if (task) {
+            setForm({
+                title: task.title,
+                description: task.description,
+                project: task.project,
+                projectId: task.projectId,
+                assignee: task.assignee,
+                assigneeId: task.assigneeId,
+                status: task.status,
+                priority: task.priority,
+                dueDate: task.dueDate,
+            });
+        } else {
+            setForm({
+                ...EMPTY_TASK_FORM,
+                project: "",
+                projectId: "",
+                assignee: "",
+                assigneeId: "",
+                status: initialStatus ?? "TODO",
+            });
+        }
 
         setError("");
     }, [open, task, initialStatus]);
@@ -60,22 +97,41 @@ export default function TaskFormModal({
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setError("");
 
         if (!form.title.trim()) {
             setError("Please enter a task title.");
             return;
         }
 
-        if (!form.assignee.trim()) {
-            setError("Please enter an assignee name.");
+        if (!form.projectId) {
+            setError("Please select a project.");
             return;
         }
 
-        onSubmit({
-            ...form,
-            title: form.title.trim(),
-            assignee: form.assignee.trim(),
-        });
+        if (!form.assigneeId) {
+            setError("Please select an assignee.");
+            return;
+        }
+        onSubmit({ ...form, title: form.title.trim(), description: form.description.trim() });
+    }
+
+    function handleProjectChange(projectId: string) {
+        const selectedProject = projects.find((project) => project.id === projectId);
+
+        setForm((current) => ({
+            ...current, projectId, project: selectedProject?.name ?? "",
+        }));
+    }
+
+    function handleAssigneeChange(assigneeId: string) {
+        const selectedUser = users.find((user) => user.id === assigneeId);
+
+        setForm((current) => ({
+            ...current,
+            assigneeId,
+            assignee: selectedUser?.name ?? "",
+        }));
     }
 
     return (
@@ -99,6 +155,7 @@ export default function TaskFormModal({
                         >
                             {task ? "Edit task" : "Create a new task"}
                         </h2>
+
                         <p className="mt-1 text-sm text-brand-muted">
                             Add the details needed to organize this task.
                         </p>
@@ -124,7 +181,9 @@ export default function TaskFormModal({
                             required
                             autoFocus
                             value={form.title}
-                            onChange={(e) => setForm({ ...form, title: e.target.value })}
+                            onChange={(e) =>
+                                setForm({ ...form, title: e.target.value })
+                            }
                             placeholder="e.g. Build the dashboard"
                             className={fieldClass}
                         />
@@ -139,7 +198,10 @@ export default function TaskFormModal({
                             rows={3}
                             value={form.description}
                             onChange={(e) =>
-                                setForm({ ...form, description: e.target.value })
+                                setForm({
+                                    ...form,
+                                    description: e.target.value,
+                                })
                             }
                             placeholder="What needs to be done?"
                             className={`${fieldClass} resize-y`}
@@ -148,17 +210,27 @@ export default function TaskFormModal({
 
                     <div>
                         <label htmlFor="task-project" className={labelClass}>
-                            Project
+                            Project *
                         </label>
                         <select
                             id="task-project"
-                            value={form.project}
-                            onChange={(e) => setForm({ ...form, project: e.target.value })}
+                            required
+                            value={form.projectId}
+                            disabled={loadingOptions || projects.length === 0}
+                            onChange={(e) => handleProjectChange(e.target.value)}
                             className={fieldClass}
                         >
-                            <option>Project Management System</option>
-                            <option>Website Redesign</option>
-                            <option>Backend Development</option>
+                            <option value="">
+                                {loadingOptions
+                                    ? "Loading projects..."
+                                    : "Select a project"}
+                            </option>
+
+                            {projects.map((project) => (
+                                <option key={project.id} value={project.id}>
+                                    {project.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
@@ -167,14 +239,30 @@ export default function TaskFormModal({
                             <label htmlFor="task-assignee" className={labelClass}>
                                 Assignee *
                             </label>
-                            <input
+                            <select
                                 id="task-assignee"
                                 required
-                                value={form.assignee}
-                                onChange={(e) => setForm({ ...form, assignee: e.target.value })}
-                                placeholder="Member name"
+                                value={form.assigneeId ?? ""}
+                                disabled={loadingOptions || users.length === 0}
+                                onChange={(e) =>
+                                    handleAssigneeChange(e.target.value)
+                                }
                                 className={fieldClass}
-                            />
+                            >
+                                <option value="">
+                                    {loadingOptions
+                                        ? "Loading users..."
+                                        : "Select a member"}
+                                </option>
+
+                                {users
+                                    .filter((user) => user.role !== "ADMIN")
+                                    .map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name} ({user.email})
+                                        </option>
+                                    ))}
+                            </select>
                         </div>
 
                         <div>
@@ -185,7 +273,12 @@ export default function TaskFormModal({
                                 id="task-date"
                                 type="date"
                                 value={form.dueDate}
-                                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        dueDate: e.target.value,
+                                    })
+                                }
                                 className={fieldClass}
                             />
                         </div>
@@ -206,7 +299,10 @@ export default function TaskFormModal({
                                 className={fieldClass}
                             >
                                 {TASK_STATUSES.map((status) => (
-                                    <option key={status.value} value={status.value}>
+                                    <option
+                                        key={status.value}
+                                        value={status.value}
+                                    >
                                         {status.label}
                                     </option>
                                 ))}
@@ -229,7 +325,10 @@ export default function TaskFormModal({
                                 className={fieldClass}
                             >
                                 {TASK_PRIORITIES.map((priority) => (
-                                    <option key={priority.value} value={priority.value}>
+                                    <option
+                                        key={priority.value}
+                                        value={priority.value}
+                                    >
                                         {priority.label}
                                     </option>
                                 ))}
@@ -257,7 +356,8 @@ export default function TaskFormModal({
 
                         <button
                             type="submit"
-                            className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
+                            disabled={loadingOptions || projects.length === 0}
+                            className="rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {task ? "Save changes" : "Create task"}
                         </button>

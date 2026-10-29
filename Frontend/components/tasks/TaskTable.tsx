@@ -13,18 +13,11 @@ interface Props {
     onDelete: (task: Task) => void;
 }
 
-export default function TaskTable({
-    tasks,
-    onStatusChange,
-    onEdit,
-    onDelete,
-}: Props) {
+export default function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: Props) {
     if (!tasks.length) {
         return (
             <div className="p-5">
-                <EmptyState
-                    title="No tasks found"
-                    description="No tasks match your current filters. Try another search or clear your filters."
+                <EmptyState title="No tasks found" description="No tasks match."
                 />
             </div>
         );

@@ -5,28 +5,7 @@ import prisma from '../../config/prisma.js';
 
 const taskStatuses = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'] as const;
 type TaskStatus = (typeof taskStatuses)[number];
-
-const createTaskSchema = z.object({
-    title: z.string().trim().min(2).max(200),
-    description: z.string().trim().min(1).max(5000),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
-    dueDate: z.string().datetime().optional().nullable(),
-    assigneeId: z.string().optional().nullable(),
-});
-
-const updateTaskSchema = z.object({
-    title: z.string().trim().min(2).max(200).optional(),
-    description: z.string().trim().min(1).max(5000).optional(),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-    dueDate: z.string().datetime().nullable().optional(),
-    assigneeId: z.string().nullable().optional(),
-    status: z.enum([
-        'TODO',
-        'IN_PROGRESS',
-        'IN_REVIEW',
-        'COMPLETED',
-    ]).optional(),
-});
+import { createTaskSchema, updateTaskSchema } from '../../models/task.schema.js';
 
 async function getAccessibleProject(
     projectId: string,
@@ -336,7 +315,14 @@ export async function getTasks(req: Request, res: Response) {
 // UPDATE TASK
 export async function updateTask(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
-    const { taskId } = req.params;
+    const taskId = req.params.taskId;
+
+    if (typeof taskId !== 'string') {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid task ID',
+        });
+    }
 
     const parsed = updateTaskSchema.safeParse(req.body);
 

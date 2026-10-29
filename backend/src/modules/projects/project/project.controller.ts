@@ -117,9 +117,25 @@ export async function getProjects(_req: Request, res: Response) {
                     ],
                 },
             orderBy: { createdAt: 'desc' },
+
             include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
                 _count: {
-                    select: { members: true, tasks: true },
+                    select: {
+                        members: true,
+                        tasks: true,
+                    },
                 },
             },
         });
@@ -195,6 +211,13 @@ export async function updateProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;
 
+    if (typeof projectId !== 'string') {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid project ID',
+        });
+    }
+
     if (!(await canManageProject(projectId, userId, role))) {
         return res.status(404).json({
             success: false,
@@ -243,6 +266,13 @@ export async function archiveProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;
 
+    if (typeof projectId !== 'string') {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid project ID',
+        });
+    }
+
     try {
         if (!(await canManageProject(projectId, userId, role))) {
             return res.status(404).json({
@@ -266,6 +296,84 @@ export async function archiveProject(req: Request, res: Response) {
         return res.status(500).json({
             success: false,
             message: 'Unable to archive project',
+        });
+    }
+}
+
+export async function deleteProject(req: Request, res: Response) {
+    try {
+        const projectId = req.params.projectId;
+
+        if (typeof projectId !== 'string') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID',
+            });
+        }
+
+        const { userId, role } = res.locals.authUser;
+
+        if (!userId || !role) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized',
+            });
+        }
+
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found',
+            });
+        }
+
+        const canDelete =
+            role === 'ADMIN' ||
+            (role === 'PROJECT_MANAGER' &&
+                project.ownerId === userId);
+
+        if (!canDelete) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to delete this project',
+            });
+        }
+
+        // await prisma.$transaction([
+        //     prisma.notification.deleteMany({
+        //         where: { projectId },
+        //     }),
+        //     prisma.activity.deleteMany({
+        //         where: { projectId },
+        //     }),
+        //     prisma.comment.deleteMany({
+        //         where: { task: { projectId } },
+        //     }),
+        //     prisma.task.deleteMany({
+        //         where: { projectId },
+        //     }),
+        //     prisma.projectMember.deleteMany({
+        //         where: { projectId },
+        //     }),
+        //     prisma.project.delete({
+        //         where: { id: projectId },
+        //     }),
+        // ]);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Project deleted successfully',
+        });
+    } catch (error) {
+        console.error('Delete project failed:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to delete project',
         });
     }
 }

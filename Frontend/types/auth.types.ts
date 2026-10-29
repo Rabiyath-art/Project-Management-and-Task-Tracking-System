@@ -1,8 +1,10 @@
-export interface RegisterRequest {
+
+export interface User {
+    id: string;
     name: string;
     email: string;
-    password: string;
-    role?: "ADMIN" | "PROJECT_MANAGER" | "MEMBER";
+    role: "ADMIN" | "MEMBER";
+    createdAt?: string;
 }
 
 export interface LoginRequest {
@@ -10,21 +12,31 @@ export interface LoginRequest {
     password: string;
 }
 
-export interface AuthUser {
-    id: string;
+export interface RegisterRequest {
     name: string;
     email: string;
-    role: "ADMIN" | "PROJECT_MANAGER" | "MEMBER";
+    password: string;
 }
 
 export interface AuthResponse {
     success: boolean;
     message: string;
+    data: {
+        user: User;
+        token: string;
+    };
+}
+
+export interface AuthResult {
+    success: boolean;
+    message: string;
+    user: User;
     token: string;
-    user: AuthUser;
 }
 
 export interface MeResponse {
     success: boolean;
-    user: AuthUser;
+    data: {
+        user: User;
+    };
 }

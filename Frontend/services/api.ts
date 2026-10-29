@@ -7,22 +7,18 @@ const api = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
-    timeout: 15000,
 });
 
-api.interceptors.request.use(
-    (config) => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
+api.interceptors.request.use((config) => {
+    if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token");
 
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
+    }
 
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
+    return config;
+});
 
 export default api;

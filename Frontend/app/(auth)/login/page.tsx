@@ -3,13 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-    ArrowUpRight,
-    Eye,
-    EyeOff,
-    LockKeyhole,
-    Mail,
-} from "lucide-react";
+import { ArrowUpRight, Eye, EyeOff, LockKeyhole, Mail, } from "lucide-react";
 import { authService } from "@/services/auth.service";
 import Button from "@/components/ui/Button";
 

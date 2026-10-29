@@ -50,7 +50,7 @@ export async function register(req: Request, res: Response) {
                 name,
                 email,
                 password: hashedPassword,
-                role: 'ADMIN',
+                role: 'MEMBER',
             },
             select: {
                 id: true,

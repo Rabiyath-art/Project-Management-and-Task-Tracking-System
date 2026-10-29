@@ -24,12 +24,11 @@ export default function ProtectedPage({
             const token = localStorage.getItem("token");
 
             if (!token) {
-                router.replace("/auth/login");
+                router.replace("/login");
                 return;
             }
 
             try {
-                // Validate the stored token with the backend.
                 await authService.getCurrentUser();
 
                 if (active) {
@@ -40,7 +39,7 @@ export default function ProtectedPage({
                 localStorage.removeItem("user");
 
                 if (active) {
-                    router.replace("/auth/login");
+                    router.replace("/login");
                 }
             } finally {
                 if (active) {

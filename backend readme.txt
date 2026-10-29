@@ -4,6 +4,21 @@ npm install -D typescript tsx prisma@6 @types/node @types/express @types/cors @t
 npx tsc --init
 npx prisma init --datasource-provider MySQL  (this create prisma -> schema.prisma )
 
+
+---------------- Seed data ------------------
+npm install bcryptjs
+npm install -D tsx
+
+package.json
+"prisma": {
+  "seed": "tsx prisma/seed.ts"
+}
+
+------- Run the seed -----------
+npx prisma migrate dev
+npx prisma generate
+npx prisma db seed
+
 configuration files
 backend/
 ├── prisma/
@@ -27,7 +42,6 @@ datasource db {
 
 enum Role {
   ADMIN
-  PROJECT_MANAGER
   MEMBER
 }
 

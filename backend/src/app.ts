@@ -6,11 +6,18 @@ import taskRoutes from './modules/tasks/task.routes.js';
 import collaborationRoutes from './modules/collaboration/collaboration.routes.js';
 import notificationRoutes from './modules/notifications/notification.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
-
+import userRoutes from "./modules/users/users.routes.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+);
+
 app.use(express.json());
 
 app.get('/', (_req, res) => {
@@ -26,5 +33,6 @@ app.use('/api', taskRoutes);
 app.use('/api', collaborationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use("/api/users", userRoutes);
 
 export default app;

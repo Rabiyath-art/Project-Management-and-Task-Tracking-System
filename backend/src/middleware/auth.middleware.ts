@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 export interface AuthUser {
     userId: string;
-    role: 'ADMIN';
+    role: 'ADMIN' | 'MEMBER';
 }
 
 export function authenticateToken(
@@ -38,7 +38,7 @@ export function authenticateToken(
         if (
             typeof payload === 'string' ||
             typeof payload.userId !== 'string' ||
-            !['ADMIN', 'PROJECT_MANAGER', 'MEMBER'].includes(
+            !['ADMIN', 'MEMBER'].includes(
                 String(payload.role),
             )
         ) {

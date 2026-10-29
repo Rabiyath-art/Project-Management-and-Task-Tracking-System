@@ -9,8 +9,8 @@ export default function ProtectedLayout({
     children: ReactNode;
 }) {
     return (
-        // <ProtectedPage>
+        <ProtectedPage>
             <AppLayout>{children}</AppLayout>
-        // </ProtectedPage>
+        </ProtectedPage>
     );
 }

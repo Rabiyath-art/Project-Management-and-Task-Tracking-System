@@ -1,19 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import { useRouter } from "next/navigation";
-import { Archive, ArrowDownUp, BriefcaseBusiness, CheckCircle2, CirclePlus, FolderKanban, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
+import { Archive, ArrowDownUp, CheckCircle2, CirclePlus, FolderKanban, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ProjectCard from "@/components/projects/ProjectCard";
-import { initialProjects } from "@/data/projects";
 import type { Project, ProjectStatus } from "@/types/project.types";
+import { projectService } from "@/services/project.service";
 
 type StatusFilter = "ALL" | ProjectStatus;
 
 export default function ProjectsPage() {
     const router = useRouter();
 
-    const [projects, setProjects] = useState<Project[]>(initialProjects);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
     const [showArchived, setShowArchived] = useState(false);
@@ -48,13 +51,63 @@ export default function ProjectsPage() {
         router.push(`/projects/${project.id}/edit`);
     }
 
-    function confirmArchive() {
+    useEffect(() => {
+        async function loadProjects() {
+            try {
+                setApiError("");
+                const data = await projectService.getAll();
+                setProjects(data);
+            } catch (error) {
+                console.error("Failed to load projects:", error);
+                setApiError("Unable to load projects. Please sign in again if your session expired.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadProjects();
+    }, []);
+
+    const handleDeleteProject = async (project: Project) => {
+        const confirmed = window.confirm(
+            "Are you sure you want to permanently delete this project?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await projectService.delete(project.id);
+            router.push("/projects");
+            router.refresh();
+        } catch (error) {
+            console.error("Failed to delete project:", error);
+            alert("Unable to delete project. Please try again.");
+        }
+    };
+
+    async function confirmArchive() {
         if (!archiveTarget) return;
 
-        setProjects((current) =>
-            current.map((project) => project.id === archiveTarget.id ? { ...project, archived: !project.archived } : project),
-        );
-        setArchiveTarget(null);
+        try {
+            if (!showArchived) {
+                await projectService.archive(archiveTarget.id);
+
+                setProjects((current) =>
+                    current.map((project) =>
+                        project.id === archiveTarget.id
+                            ? { ...project, archived: true }
+                            : project,
+                    ),
+                );
+            } else {
+                setApiError(
+                    "Restore is not supported by the current backend API yet.",
+                );
+            }
+            setArchiveTarget(null);
+        } catch (error) {
+            setApiError("Unable to archive this project.");
+        }
     }
 
     function clearFilters() {
@@ -67,13 +120,6 @@ export default function ProjectsPage() {
             <div className="mx-auto max-w-[1600px] space-y-7 p-4 sm:p-6 lg:p-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <div className="flex items-center gap-2 text-sm text-brand-muted">
-                            <BriefcaseBusiness size={16} />
-                            Workspace
-                            <span>/</span>
-                            <span className="font-medium text-foreground">Projects</span>
-                        </div>
-
                         <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                             Project management
                         </h1>
@@ -202,7 +248,9 @@ export default function ProjectsPage() {
                             }
                             >
                                 {visibleProjects.map((project) => (
-                                    <ProjectCard key={project.id} project={project} onEdit={handleEdit} onArchive={setArchiveTarget} />
+                                    <ProjectCard key={project.id} project={project} onEdit={handleEdit}
+                                        onArchive={setArchiveTarget} handleDeleteProject={handleDeleteProject}
+                                    />
                                 ))}
                             </div>
                         )}
