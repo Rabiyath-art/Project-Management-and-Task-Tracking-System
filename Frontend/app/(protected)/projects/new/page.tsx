@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, FolderPlus } from "lucide-react";
-import axios from "axios";
 
 import Button from "@/components/ui/Button";
 import ProjectForm from "@/components/projects/ProjectForm";
