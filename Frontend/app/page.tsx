@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-    FolderKanban, CheckSquare, Clock3, AlertCircle, ArrowRight, CalendarDays, Activity, RefreshCw,
+    FolderKanban, CheckSquare, AlertCircle, ArrowRight, Activity, RefreshCw,
 } from "lucide-react";
 
 import AppLayout from "@/components/layout/AppLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import api from "@/services/api";
 import { authService } from "@/services/auth.service";
+import ProtectedPage from "@/components/layout/ProtectedPage";
 
 interface DashboardProject {
     id: string;
@@ -135,178 +136,180 @@ export default function Home() {
     }, []);
 
     return (
-        <AppLayout>
-            <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-8 xl:px-10">
-                <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                            Welcome
-                            {currentUser?.name
-                                ? `, ${currentUser.name.split(" ")[0]}`
-                                : ""}
-                            !
-                        </h2>
-                    </div>
+        <ProtectedPage>
 
-                    <Link
-                        href="/projects"
-                        className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-brand-primary px-4 text-xs font-semibold text-white transition hover:bg-brand-hover sm:self-auto"
-                    >
-                        <FolderKanban size={16} />
-                        View projects
-                    </Link>
-                </div>
+            <AppLayout>
+                <main className="mx-auto max-w-[1600px] px-4 py-7 sm:px-7 sm:py-8 xl:px-10">
+                    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <div>
+                            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                                Welcome
+                                {currentUser?.name
+                                    ? `, ${currentUser.name.split(" ")[0]}`
+                                    : ""}
+                                !
+                            </h2>
+                        </div>
 
-                {/* Loading */}
-                {loading && (
-                    <div className="flex items-center justify-center gap-3 rounded-xl border border-border bg-card py-16 text-sm text-brand-muted">
-                        <RefreshCw size={18} className="animate-spin" />
-                        Loading dashboard...
-                    </div>
-                )}
-
-                {/* Error */}
-                {!loading && error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-                        <p className="text-sm font-medium text-red-700">{error}</p>
-                        <button
-                            type="button"
-                            onClick={() => void loadDashboard()}
-                            className="mt-4 rounded-lg bg-brand-primary px-4 py-2 text-xs font-semibold text-white"
+                        <Link
+                            href="/projects"
+                            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-brand-primary px-4 text-xs font-semibold text-white transition hover:bg-brand-hover sm:self-auto"
                         >
-                            Try again
-                        </button>
+                            <FolderKanban size={16} />
+                            View projects
+                        </Link>
                     </div>
-                )}
 
-                {/* Dashboard content */}
-                {!loading && !error && dashboard && (
-                    <>
-                        {/* Count cards */}
-                        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <StatCard
-                                title="Total Projects"
-                                value={dashboard.totalProjects}
-                                description="Accessible active projects"
-                                icon={<FolderKanban size={21} />}
-                                iconClassName="bg-brand-beige text-brand-primary"
-                            />
+                    {/* Loading */}
+                    {loading && (
+                        <div className="flex items-center justify-center gap-3 rounded-xl border border-border bg-card py-16 text-sm text-brand-muted">
+                            <RefreshCw size={18} className="animate-spin" />
+                            Loading dashboard...
+                        </div>
+                    )}
 
-                            <StatCard
-                                title="Total Tasks"
-                                value={dashboard.totalTasks}
-                                description="Tasks in your workspace"
-                                icon={<CheckSquare size={21} />}
-                                iconClassName="bg-muted-background text-brand-primary"
-                            />
+                    {/* Error */}
+                    {!loading && error && (
+                        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+                            <p className="text-sm font-medium text-red-700">{error}</p>
+                            <button
+                                type="button"
+                                onClick={() => void loadDashboard()}
+                                className="mt-4 rounded-lg bg-brand-primary px-4 py-2 text-xs font-semibold text-white"
+                            >
+                                Try again
+                            </button>
+                        </div>
+                    )}
 
-                            <StatCard
-                                title="Completed Tasks"
-                                value={dashboard.completedTasks}
-                                description={`${dashboard.completionPercentage}% completion rate`}
-                                icon={<Activity size={21} />}
-                                iconClassName="bg-sys-success-bg text-sys-success"
-                            />
+                    {/* Dashboard content */}
+                    {!loading && !error && dashboard && (
+                        <>
+                            {/* Count cards */}
+                            <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                                <StatCard
+                                    title="Total Projects"
+                                    value={dashboard.totalProjects}
+                                    description="Accessible active projects"
+                                    icon={<FolderKanban size={21} />}
+                                    iconClassName="bg-brand-beige text-brand-primary"
+                                />
 
-                            <StatCard
-                                title="Overdue Tasks"
-                                value={dashboard.overdueTasks}
-                                description="Tasks past their due date"
-                                icon={<AlertCircle size={21} />}
-                                iconClassName="bg-sys-danger-bg text-sys-danger"
-                            />
-                        </section>
+                                <StatCard
+                                    title="Total Tasks"
+                                    value={dashboard.totalTasks}
+                                    description="Tasks in your workspace"
+                                    icon={<CheckSquare size={21} />}
+                                    iconClassName="bg-muted-background text-brand-primary"
+                                />
 
-                        {/* Projects */}
-                        <section className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
-                            <div className="mb-5 flex items-center justify-between gap-3">
-                                <div>
-                                    <h3 className="text-base font-semibold text-foreground">
-                                        Your projects
-                                    </h3>
-                                    <p className="mt-1 text-xs text-brand-muted">
-                                        Project progress and deadlines
+                                <StatCard
+                                    title="Completed Tasks"
+                                    value={dashboard.completedTasks}
+                                    description={`${dashboard.completionPercentage}% completion rate`}
+                                    icon={<Activity size={21} />}
+                                    iconClassName="bg-sys-success-bg text-sys-success"
+                                />
+
+                                <StatCard
+                                    title="Overdue Tasks"
+                                    value={dashboard.overdueTasks}
+                                    description="Tasks past their due date"
+                                    icon={<AlertCircle size={21} />}
+                                    iconClassName="bg-sys-danger-bg text-sys-danger"
+                                />
+                            </section>
+
+                            {/* Projects */}
+                            <section className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                                <div className="mb-5 flex items-center justify-between gap-3">
+                                    <div>
+                                        <h3 className="text-base font-semibold text-foreground">
+                                            Your projects
+                                        </h3>
+                                        <p className="mt-1 text-xs text-brand-muted">
+                                            Project progress and deadlines
+                                        </p>
+                                    </div>
+
+                                    <Link
+                                        href="/projects"
+                                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-hover"
+                                    >
+                                        View all <ArrowRight size={14} />
+                                    </Link>
+                                </div>
+
+                                {dashboard.projects.length === 0 ? (
+                                    <p className="py-8 text-center text-sm text-brand-muted">
+                                        No projects available yet.
                                     </p>
-                                </div>
-
-                                <Link
-                                    href="/projects"
-                                    className="inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:text-brand-hover"
-                                >
-                                    View all <ArrowRight size={14} />
-                                </Link>
-                            </div>
-
-                            {dashboard.projects.length === 0 ? (
-                                <p className="py-8 text-center text-sm text-brand-muted">
-                                    No projects available yet.
-                                </p>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[520px] text-left">
-                                        <thead>
-                                            <tr className="border-y border-border text-[10px] uppercase tracking-wider text-brand-muted">
-                                                <th className="py-3 pr-4 font-semibold">Project</th>
-                                                <th className="px-3 py-3 font-semibold">Progress</th>
-                                                <th className="px-3 py-3 font-semibold">Deadline</th>
-                                                <th className="px-3 py-3 font-semibold">Priority</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            {dashboard.projects.map((project) => (
-                                                <tr
-                                                    key={project.id}
-                                                    className="border-b border-border last:border-0"
-                                                >
-                                                    <td className="py-4 pr-4">
-                                                        <Link
-                                                            href={`/projects/${project.id}`}
-                                                            className="text-xs font-semibold text-foreground hover:text-brand-primary"
-                                                        >
-                                                            {project.name}
-                                                        </Link>
-                                                        <p className="mt-1 text-[10px] text-brand-muted">
-                                                            {project.completedTasks}/{project.totalTasks} tasks completed
-                                                        </p>
-                                                    </td>
-
-                                                    <td className="px-3 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted-background">
-                                                                <div
-                                                                    className="h-full rounded-full bg-brand-primary"
-                                                                    style={{
-                                                                        width: `${project.completionPercentage}%`,
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <span className="text-[10px] font-semibold text-foreground">
-                                                                {project.completionPercentage}%
-                                                            </span>
-                                                        </div>
-                                                    </td>
-
-                                                    <td className="whitespace-nowrap px-3 py-4 text-[11px] text-brand-muted">
-                                                        {formatDate(project.deadline)}
-                                                    </td>
-
-                                                    <td className="px-3 py-4">
-                                                        <span
-                                                            className={`rounded-md px-2 py-1 text-[10px] font-medium ${getPriorityClass(project.priority)}`}
-                                                        >
-                                                            {project.priority}
-                                                        </span>
-                                                    </td>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full min-w-[520px] text-left">
+                                            <thead>
+                                                <tr className="border-y border-border text-[10px] uppercase tracking-wider text-brand-muted">
+                                                    <th className="py-3 pr-4 font-semibold">Project</th>
+                                                    <th className="px-3 py-3 font-semibold">Progress</th>
+                                                    <th className="px-3 py-3 font-semibold">Deadline</th>
+                                                    <th className="px-3 py-3 font-semibold">Priority</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </section>
+                                            </thead>
 
-                        {/* <section className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
+                                            <tbody>
+                                                {dashboard.projects.map((project) => (
+                                                    <tr
+                                                        key={project.id}
+                                                        className="border-b border-border last:border-0"
+                                                    >
+                                                        <td className="py-4 pr-4">
+                                                            <Link
+                                                                href={`/projects/${project.id}`}
+                                                                className="text-xs font-semibold text-foreground hover:text-brand-primary"
+                                                            >
+                                                                {project.name}
+                                                            </Link>
+                                                            <p className="mt-1 text-[10px] text-brand-muted">
+                                                                {project.completedTasks}/{project.totalTasks} tasks completed
+                                                            </p>
+                                                        </td>
+
+                                                        <td className="px-3 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted-background">
+                                                                    <div
+                                                                        className="h-full rounded-full bg-brand-primary"
+                                                                        style={{
+                                                                            width: `${project.completionPercentage}%`,
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <span className="text-[10px] font-semibold text-foreground">
+                                                                    {project.completionPercentage}%
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td className="whitespace-nowrap px-3 py-4 text-[11px] text-brand-muted">
+                                                            {formatDate(project.deadline)}
+                                                        </td>
+
+                                                        <td className="px-3 py-4">
+                                                            <span
+                                                                className={`rounded-md px-2 py-1 text-[10px] font-medium ${getPriorityClass(project.priority)}`}
+                                                            >
+                                                                {project.priority}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </section>
+
+                            {/* <section className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6">
                             <div className="mb-5">
                                 <h3 className="text-base font-semibold text-foreground">
                                     Recent activity
@@ -359,9 +362,10 @@ export default function Home() {
                             )}
                         </section> */}
 
-                    </>
-                )}
-            </main>
-        </AppLayout>
+                        </>
+                    )}
+                </main>
+            </AppLayout>
+        </ProtectedPage>
     );
 }
