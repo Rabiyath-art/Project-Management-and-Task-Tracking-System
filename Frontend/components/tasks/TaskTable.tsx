@@ -1,7 +1,6 @@
-import { CheckCircle2, Circle, FolderKanban } from "lucide-react";
+import { CheckCircle2, Circle, FolderKanban, Pencil, Trash } from "lucide-react";
 import type { Task, TaskStatus } from "@/types/task.types";
 import { TASK_STATUSES } from "@/types/task.types";
-import TaskStatusBadge from "./TaskStatusBadge";
 import TaskPriorityBadge from "./TaskPriorityBadge";
 import { formatTaskDate, getInitials } from "./TaskCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -132,17 +131,17 @@ export default function TaskTable({ tasks, onStatusChange, onEdit, onDelete }: P
                                     <button
                                         type="button"
                                         onClick={() => onEdit(task)}
-                                        className="text-sm font-semibold text-brand-primary hover:underline"
+                                        className="rounded-lg p-1.5 text-yellow-600 transition hover:bg-hover-background hover:text-yellow-700"
                                     >
-                                        Edit
+                                        <Pencil size={16} />
                                     </button>
 
                                     <button
                                         type="button"
                                         onClick={() => onDelete(task)}
-                                        className="text-sm font-medium text-sys-danger hover:underline"
+                                        className="rounded-lg p-1.5 text-red-600 transition hover:bg-sys-danger-bg hover:text-sys-danger"
                                     >
-                                        Delete
+                                        <Trash size={16} />
                                     </button>
                                 </div>
                             </td>

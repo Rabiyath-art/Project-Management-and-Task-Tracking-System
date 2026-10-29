@@ -1,4 +1,4 @@
-import { CalendarDays, FolderKanban, MoreHorizontal } from "lucide-react";
+import { CalendarDays, FolderKanban, MoreHorizontal, Pencil } from "lucide-react";
 import Link from "next/link";
 import type { Task } from "@/types/task.types";
 import TaskPriorityBadge from "./TaskPriorityBadge";
@@ -26,18 +26,8 @@ export function formatTaskDate(date: string) {
     });
 }
 
-export default function TaskCard({
-    task,
-    onEdit,
-    onDelete,
-    showStatus = true,
-    isDragging = false,
-}: TaskCardProps) {
-    const overdue =
-        Boolean(task.dueDate) &&
-        task.status !== "COMPLETED" &&
-        new Date(`${task.dueDate}T00:00:00`) <
-        new Date(new Date().setHours(0, 0, 0, 0));
+export default function TaskCard({ task, onEdit, onDelete, showStatus = true, isDragging = false }: TaskCardProps) {
+    const overdue = Boolean(task.dueDate) && task.status !== "COMPLETED" && new Date(`${task.dueDate}T00:00:00`) < new Date(new Date().setHours(0, 0, 0, 0));
 
     return (
         <article
@@ -57,9 +47,10 @@ export default function TaskCard({
                         onClick={() => onEdit(task)}
                         title="Edit task"
                         aria-label={`Edit ${task.title}`}
-                        className="rounded-lg p-1.5 text-brand-muted transition hover:bg-hover-background hover:text-brand-primary"
+                        className="rounded-lg p-1.5 text-yellow-600 transition hover:bg-hover-background hover:text-yellow-700"
                     >
-                        <MoreHorizontal size={18} />
+                        {/* <MoreHorizontal size={18} /> */}
+                        <Pencil size={16} />
                     </button>
 
                     <button
@@ -67,7 +58,7 @@ export default function TaskCard({
                         onClick={() => onDelete(task)}
                         title="Delete task"
                         aria-label={`Delete ${task.title}`}
-                        className="rounded-lg p-1.5 text-brand-muted transition hover:bg-sys-danger-bg hover:text-sys-danger"
+                        className="rounded-lg p-1.5 text-red-600 transition hover:bg-sys-danger-bg hover:text-sys-danger"
                     >
                         <span className="text-sm font-semibold">×</span>
                     </button>

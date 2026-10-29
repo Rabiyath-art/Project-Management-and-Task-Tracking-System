@@ -4,9 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-    Bell, CheckSquare, Command, FolderKanban, LayoutDashboard, MoreHorizontal, Settings, Users, X,
-} from "lucide-react";
+import { Bell, CheckSquare, Command, FolderKanban, LayoutDashboard, MoreHorizontal, Settings, Users, X } from "lucide-react";
 
 import { authService } from "@/services/auth.service";
 
