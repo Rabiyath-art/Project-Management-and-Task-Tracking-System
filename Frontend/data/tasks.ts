@@ -11,6 +11,8 @@ export const initialTasks: Task[] = [
         status: "IN_PROGRESS",
         priority: "HIGH",
         dueDate: "2026-11-02",
+        projectId: "",
+        assigneeId: null
     },
     {
         id: "TSK-102",
@@ -21,6 +23,8 @@ export const initialTasks: Task[] = [
         status: "IN_REVIEW",
         priority: "URGENT",
         dueDate: "2026-10-30",
+        projectId: "",
+        assigneeId: null
     },
     {
         id: "TSK-103",
@@ -31,6 +35,8 @@ export const initialTasks: Task[] = [
         status: "TODO",
         priority: "MEDIUM",
         dueDate: "2026-11-05",
+        projectId: "",
+        assigneeId: null
     },
     {
         id: "TSK-104",
@@ -41,6 +47,8 @@ export const initialTasks: Task[] = [
         status: "COMPLETED",
         priority: "LOW",
         dueDate: "2026-10-24",
+        projectId: "",
+        assigneeId: null
     },
     {
         id: "TSK-105",
@@ -51,6 +59,8 @@ export const initialTasks: Task[] = [
         status: "TODO",
         priority: "HIGH",
         dueDate: "2026-11-03",
+        projectId: "",
+        assigneeId: null
     },
     {
         id: "TSK-106",
@@ -61,5 +71,7 @@ export const initialTasks: Task[] = [
         status: "IN_PROGRESS",
         priority: "MEDIUM",
         dueDate: "2026-11-01",
+        projectId: "",
+        assigneeId: null
     },
 ];
