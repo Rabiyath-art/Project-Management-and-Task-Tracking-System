@@ -8,6 +8,8 @@ export const demoMembers: ProjectMember[] = [
         email: "rabiyath@example.com",
         role: "ADMIN",
         avatarColor: "bg-violet-100 text-violet-700",
+        projectsCount: 0,
+        createdAt: ""
     },
     {
         id: "u2",
@@ -15,6 +17,8 @@ export const demoMembers: ProjectMember[] = [
         email: "arun@example.com",
         role: "PROJECT_MANAGER",
         avatarColor: "bg-sky-100 text-sky-700",
+        projectsCount: 0,
+        createdAt: ""
     },
     {
         id: "u3",
@@ -22,6 +26,8 @@ export const demoMembers: ProjectMember[] = [
         email: "priya@example.com",
         role: "MEMBER",
         avatarColor: "bg-emerald-100 text-emerald-700",
+        projectsCount: 0,
+        createdAt: ""
     },
     {
         id: "u4",
@@ -29,6 +35,8 @@ export const demoMembers: ProjectMember[] = [
         email: "mohamed@example.com",
         role: "MEMBER",
         avatarColor: "bg-amber-100 text-amber-700",
+        projectsCount: 0,
+        createdAt: ""
     },
     {
         id: "u5",
@@ -36,6 +44,8 @@ export const demoMembers: ProjectMember[] = [
         email: "kavitha@example.com",
         role: "MEMBER",
         avatarColor: "bg-pink-100 text-pink-700",
+        projectsCount: 0,
+        createdAt: ""
     },
 ];
 
