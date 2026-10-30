@@ -5,6 +5,7 @@ export const projectSchema = z.object({
     description: z.string().trim().min(1).max(5000),
     deadline: z.string().datetime().optional().nullable(),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+    memberIds: z.array(z.string().min(1)).optional().default([]),
 });
 
 export const memberSchema = z.object({

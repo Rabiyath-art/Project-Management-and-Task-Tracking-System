@@ -27,6 +27,7 @@ export default function NewProjectPage() {
                 deadline: values.deadline
                     ? new Date(`${values.deadline}T00:00:00.000Z`).toISOString()
                     : null,
+                memberIds: values.memberIds,
             });
 
             router.push(`/projects/${project.id}`);

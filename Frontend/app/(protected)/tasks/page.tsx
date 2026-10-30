@@ -158,8 +158,8 @@ export default function TasksPage() {
             if (editingTask?.id === task.id) {
                 closeForm();
             }
+            await loadTasks();
         } catch (error) {
-            console.error("Failed to delete task:", error);
             setApiError("Unable to delete this task. You may not have permission.");
         }
     }

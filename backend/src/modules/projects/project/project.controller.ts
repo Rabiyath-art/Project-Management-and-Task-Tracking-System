@@ -37,7 +37,6 @@ async function canManageProject(projectId: any, userId: string, role: string,) {
     return Boolean(project);
 }
 
-// CREATE PROJECT
 export async function createProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
 
@@ -59,7 +58,23 @@ export async function createProject(req: Request, res: Response) {
     }
 
     try {
-        const { name, description, deadline, priority } = parsed.data;
+        const { name, description, deadline, priority, memberIds } = parsed.data;
+
+        const uniqueMemberIds = [...new Set([...memberIds])];
+
+        const existingUsers = await prisma.user.findMany({
+            where: {
+                id: { in: uniqueMemberIds },
+            },
+            select: { id: true },
+        });
+
+        if (existingUsers.length !== uniqueMemberIds.length) {
+            return res.status(400).json({
+                success: false,
+                message: "One or more selected team members do not exist.",
+            });
+        }
 
         const project = await prisma.project.create({
             data: {
@@ -69,7 +84,9 @@ export async function createProject(req: Request, res: Response) {
                 priority,
                 ownerId: userId,
                 members: {
-                    create: { userId },
+                    create: uniqueMemberIds.map((id) => ({
+                        userId: id,
+                    })),
                 },
             },
             include: {
@@ -83,6 +100,12 @@ export async function createProject(req: Request, res: Response) {
                                 role: true,
                             },
                         },
+                    },
+                },
+                _count: {
+                    select: {
+                        members: true,
+                        tasks: true,
                     },
                 },
             },
@@ -102,7 +125,6 @@ export async function createProject(req: Request, res: Response) {
     }
 }
 
-// LIST AUTHORIZED PROJECTS
 export async function getProjects(_req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
 
@@ -153,7 +175,6 @@ export async function getProjects(_req: Request, res: Response) {
     }
 }
 
-// GET ONE PROJECT
 export async function getProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const projectId = req.params.projectId;
@@ -205,63 +226,112 @@ export async function getProject(req: Request, res: Response) {
         });
     }
 }
-
-// UPDATE PROJECT
 export async function updateProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;
 
-    if (typeof projectId !== 'string') {
+    if (typeof projectId !== "string") {
         return res.status(400).json({
             success: false,
-            message: 'Invalid project ID',
-        });
-    }
-
-    if (!(await canManageProject(projectId, userId, role))) {
-        return res.status(404).json({
-            success: false,
-            message: 'Project not found or you cannot manage it',
-        });
-    }
-
-    const parsed = updateProjectSchema.safeParse(req.body);
-
-    if (!parsed.success || Object.keys(req.body ?? {}).length === 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Provide valid project fields to update',
+            message: "Invalid project ID",
         });
     }
 
     try {
-        const data = parsed.data;
+        const allowed = await canManageProject(projectId, userId, role);
+
+        if (!allowed) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found or you cannot manage it",
+            });
+        }
+
+        const parsed = updateProjectSchema.safeParse(req.body);
+
+        if (
+            !parsed.success ||
+            Object.keys(req.body ?? {}).length === 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Provide valid project fields to update",
+                errors: parsed.success ? undefined : parsed.error.issues,
+            });
+        }
+
+        const { memberIds, deadline, ...projectFields } = parsed.data;
+        const data: Record<string, unknown> = { ...projectFields };
+
+        if (deadline !== undefined) {
+            data.deadline = deadline ? new Date(deadline) : null;
+        }
+
+        if (memberIds !== undefined) {
+            const uniqueMemberIds = [...new Set(memberIds)];
+
+            const existingUsers = await prisma.user.findMany({
+                where: {
+                    id: { in: uniqueMemberIds },
+                },
+                select: { id: true },
+            });
+
+            if (existingUsers.length !== uniqueMemberIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: "One or more selected team members do not exist.",
+                });
+            }
+
+            data.members = {
+                deleteMany: {},
+                create: uniqueMemberIds.map((id) => ({
+                    userId: id,
+                })),
+            };
+        }
 
         const project = await prisma.project.update({
             where: { id: projectId },
-            data: {
-                ...data,
-                ...(data.deadline !== undefined
-                    ? { deadline: data.deadline ? new Date(data.deadline) : null }
-                    : {}),
+            data: data as any,
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: {
+                        members: true,
+                        tasks: true,
+                    },
+                },
             },
         });
 
         return res.json({
             success: true,
-            message: 'Project updated successfully',
+            message: "Project updated successfully",
             data: { project },
         });
     } catch (error) {
-        console.error('Update project error:', error);
+        console.error("Update project error:", error);
+
         return res.status(500).json({
             success: false,
-            message: 'Unable to update project',
+            message: "Unable to update project",
         });
     }
 }
 
-// ARCHIVE PROJECT
 export async function archiveProject(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const { projectId } = req.params;
@@ -302,21 +372,13 @@ export async function archiveProject(req: Request, res: Response) {
 
 export async function deleteProject(req: Request, res: Response) {
     try {
-        const projectId = req.params.projectId;
+        const { projectId } = req.params;
+        const { userId, role } = res.locals.authUser;
 
         if (typeof projectId !== 'string') {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid project ID',
-            });
-        }
-
-        const { userId, role } = res.locals.authUser;
-
-        if (!userId || !role) {
-            return res.status(401).json({
-                success: false,
-                message: 'Unauthorized',
             });
         }
 
@@ -333,8 +395,7 @@ export async function deleteProject(req: Request, res: Response) {
 
         const canDelete =
             role === 'ADMIN' ||
-            (role === 'PROJECT_MANAGER' &&
-                project.ownerId === userId);
+            (role === 'PROJECT_MANAGER' && project.ownerId === userId);
 
         if (!canDelete) {
             return res.status(403).json({
@@ -343,31 +404,15 @@ export async function deleteProject(req: Request, res: Response) {
             });
         }
 
-        // await prisma.$transaction([
-        //     prisma.notification.deleteMany({
-        //         where: { projectId },
-        //     }),
-        //     prisma.activity.deleteMany({
-        //         where: { projectId },
-        //     }),
-        //     prisma.comment.deleteMany({
-        //         where: { task: { projectId } },
-        //     }),
-        //     prisma.task.deleteMany({
-        //         where: { projectId },
-        //     }),
-        //     prisma.projectMember.deleteMany({
-        //         where: { projectId },
-        //     }),
-        //     prisma.project.delete({
-        //         where: { id: projectId },
-        //     }),
-        // ]);
+        await prisma.project.delete({
+            where: { id: projectId },
+        });
 
         return res.status(200).json({
             success: true,
             message: 'Project deleted successfully',
         });
+
     } catch (error) {
         console.error('Delete project failed:', error);
 

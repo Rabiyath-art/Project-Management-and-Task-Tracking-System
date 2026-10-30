@@ -127,8 +127,7 @@ export default function Sidebar({ mobileMenuOpen, onClose }: SidebarProps) {
                         </div>
                     </nav>
 
-                    {/* Personal navigation */}
-                    <div className="mt-8 px-4">
+                    {/* <div className="mt-8 px-4">
                         <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
                             Personal
                         </p>
@@ -152,9 +151,8 @@ export default function Sidebar({ mobileMenuOpen, onClose }: SidebarProps) {
                                 Settings
                             </Link>
                         </div>
-                    </div>
+                    </div> */}
 
-                    {/* Logged-in user */}
                     <div className="mt-auto p-4">
                         <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-4">
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-beige text-[10px] font-semibold text-brand-primary">

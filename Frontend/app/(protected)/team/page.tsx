@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { UserPlus, Users, ChevronLeft, ChevronRight, CheckCircle2, X } from "lucide-react";
+import { UserPlus, ChevronLeft, ChevronRight, CheckCircle2, X } from "lucide-react";
 import TeamSummary from "@/components/team/TeamSummary";
 import TeamToolbar from "@/components/team/TeamToolbar";
 import TeamTable from "@/components/team/TeamTable";
@@ -12,6 +12,18 @@ import { userService } from "@/services/user.service";
 
 type ModalMode = "create" | "edit" | "view";
 const PAGE_SIZE = 10;
+
+function mapApiUserToTeamMember(user: Awaited<ReturnType<typeof userService.getAll>>[number]): TeamMember {
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: "ACTIVE",
+        projectsCount: user.projectsCount,
+        joinedAt: user.createdAt,
+    };
+}
 
 export default function TeamPage() {
     const [members, setMembers] = useState<TeamMember[]>([]);
@@ -34,16 +46,7 @@ export default function TeamPage() {
 
                 if (!active) return;
 
-                const teamMembers: TeamMember[] = users.map((user) => ({
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                    status: "ACTIVE",
-                    projectsCount: 0,
-                    joinedAt: "",
-                }));
-
+                const teamMembers: TeamMember[] = users.map(mapApiUserToTeamMember);
                 setMembers(teamMembers);
             } catch (error) {
                 console.error("Failed to load team members:", error);
@@ -96,24 +99,60 @@ export default function TeamPage() {
         setFeedbackType(type);
     };
 
-    const handleSave = (values: TeamMemberFormValues) => {
+
+    const handleSave = async (values: TeamMemberFormValues) => {
         try {
             if (modalMode === "create") {
-                teamService.create(values);
-                setMembers(teamService.getAll());
+                const result = await userService.create({
+                    name: values.name,
+                    email: values.email,
+                    role: values.role,
+                });
+
+                const users = await userService.getAll();
+
+                const teamMembers: TeamMember[] = users.map((user) => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    status: "ACTIVE",
+                    projectsCount: 0,
+                    joinedAt: "",
+                }));
+
+                setMembers(teamMembers);
                 setCurrentPage(1);
-                showFeedback("Member added to the demo workspace. No email invitation was sent.");
+
+                showFeedback(
+                    `User created successfully. Email: ${result.credentials.email} | Temporary password: ${result.credentials.temporaryPassword}. Share these credentials securely; no email was sent.`
+                );
             } else if (modalMode === "edit" && selectedMember) {
                 teamService.update(selectedMember.id, values);
                 setMembers(teamService.getAll());
-                showFeedback("Member details updated successfully.");
+                showFeedback("Member details updated in demo storage.");
             }
 
             closeModal();
-
         } catch (error) {
+            const message =
+                typeof error === "object" &&
+                    error !== null &&
+                    "response" in error
+                    ? (
+                        error as {
+                            response?: {
+                                data?: { message?: string };
+                            };
+                        }
+                    ).response?.data?.message
+                    : undefined;
+
             showFeedback(
-                error instanceof Error ? error.message : "Unable to save member.",
+                message ||
+                (error instanceof Error
+                    ? error.message
+                    : "Unable to save member."),
                 "error"
             );
         }

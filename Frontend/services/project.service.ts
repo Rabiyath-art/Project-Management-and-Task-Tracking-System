@@ -15,6 +15,8 @@ function mapProject(raw: Record<string, any>): Project {
             name: user.name,
             email: user.email,
             role: user.role,
+            projectsCount: user.projectsCount ?? 0,
+            createdAt: user.createdAt ?? "",
         };
     });
 
@@ -36,9 +38,11 @@ function mapProject(raw: Record<string, any>): Project {
 }
 
 export const projectService = {
+
     async getAll(): Promise<Project[]> {
         const response = await api.get<ProjectListApiResponse>("/projects");
-        return response.data.data.projects.map(mapProject);
+        const projects = response.data.data.projects.map(mapProject);
+        return projects.filter(project => !project.archived);
     },
 
     async getById(id: string): Promise<Project> {

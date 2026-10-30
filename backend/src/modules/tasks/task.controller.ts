@@ -234,6 +234,12 @@ export async function getTasks(req: Request, res: Response) {
 
     try {
         const project = await getAccessibleProject(projectId, userId, role);
+        console.log("TASK ACCESS DEBUG:", {
+            projectId,
+            userId,
+            role,
+            project,
+        });
 
         if (!project) {
             return res.status(404).json({
@@ -482,6 +488,13 @@ export async function updateTask(req: Request, res: Response) {
 export async function deleteTask(req: Request, res: Response) {
     const { userId, role } = res.locals.authUser;
     const { taskId } = req.params;
+
+    if (typeof taskId !== 'string') {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid task ID',
+        });
+    }
 
     try {
         const task = await prisma.task.findUnique({

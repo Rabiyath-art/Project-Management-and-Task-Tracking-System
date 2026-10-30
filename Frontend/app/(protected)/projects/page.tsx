@@ -77,10 +77,13 @@ export default function ProjectsPage() {
 
         try {
             await projectService.delete(project.id);
-            router.push("/projects");
-            router.refresh();
+            setProjects((current) =>
+                current.filter((item) => item.id !== project.id)
+            );
+            const updatedProjects = await projectService.getAll();
+            setProjects(updatedProjects);
+            setApiError("");
         } catch (error) {
-            console.error("Failed to delete project:", error);
             alert("Unable to delete project. Please try again.");
         }
     };

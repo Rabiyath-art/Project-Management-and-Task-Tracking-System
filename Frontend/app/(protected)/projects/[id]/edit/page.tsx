@@ -6,7 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { projectService } from "@/services/project.service";
-import type { Project, ProjectPriority } from "@/types/project.types";
+import type { Project, ProjectPriority, ProjectMember } from "@/types/project.types";
+import { userService } from "@/services/user.service";
 
 export default function EditProjectPage() {
     const params = useParams<{ id: string }>();
@@ -14,6 +15,8 @@ export default function EditProjectPage() {
     const id = params.id;
 
     const [project, setProject] = useState<Project | null>(null);
+    const [allUsers, setAllUsers] = useState<ProjectMember[]>([]);
+    const [memberIds, setMemberIds] = useState<string[]>([]);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState<ProjectPriority>("MEDIUM");
@@ -25,7 +28,10 @@ export default function EditProjectPage() {
     useEffect(() => {
         async function loadProject() {
             try {
-                const data = await projectService.getById(id);
+                const [data, users] = await Promise.all([
+                    projectService.getById(id),
+                    userService.getAll(),
+                ]);
                 setProject(data);
                 setName(data.name);
                 setDescription(data.description);
@@ -33,6 +39,8 @@ export default function EditProjectPage() {
                 setDeadline(
                     data.deadline ? new Date(data.deadline).toISOString().slice(0, 10) : "",
                 );
+                setAllUsers(users);
+                setMemberIds(data.members.map((member) => member.id));
             } catch (err) {
                 console.error("Load project failed:", err);
                 setError("Unable to load this project.");
@@ -40,9 +48,16 @@ export default function EditProjectPage() {
                 setLoading(false);
             }
         }
-
         if (id) loadProject();
     }, [id]);
+
+    function handleMemberChange(userId: string) {
+        setMemberIds((previous) =>
+            previous.includes(userId)
+                ? previous.filter((id) => id !== userId)
+                : [...previous, userId],
+        );
+    }
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -63,6 +78,7 @@ export default function EditProjectPage() {
                 deadline: deadline
                     ? new Date(`${deadline}T00:00:00`).toISOString()
                     : null,
+                memberIds
             });
 
             router.push(`/projects/${id}`);
@@ -163,6 +179,51 @@ export default function EditProjectPage() {
                                 <option value="HIGH">High</option>
                                 <option value="URGENT">Urgent</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label className="text-sm font-medium text-foreground">
+                                Team Members
+                            </label>
+
+                            <p className="mt-1 text-xs text-brand-muted">
+                                Select the users who should be assigned to this project.
+                            </p>
+
+                            <div className="mt-3 space-y-2 rounded-xl border border-border p-4">
+                                {allUsers.length === 0 ? (
+                                    <p className="text-sm text-brand-muted">
+                                        No users available.
+                                    </p>
+                                ) : (
+                                    allUsers.map((user) => (
+                                        <label
+                                            key={user.id}
+                                            className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-background"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={memberIds.includes(user.id)}
+                                                onChange={() => handleMemberChange(user.id)}
+                                                className="h-4 w-4 accent-brand-primary"
+                                            />
+
+                                            <div>
+                                                <p className="text-sm font-medium text-foreground">
+                                                    {user.name}
+                                                </p>
+                                                <p className="text-xs text-brand-muted">
+                                                    {user.email} · {user.role}
+                                                </p>
+                                            </div>
+                                        </label>
+                                    ))
+                                )}
+                            </div>
+
+                            <p className="mt-2 text-xs text-brand-muted">
+                                {memberIds.length} member(s) selected
+                            </p>
                         </div>
 
                         <div>

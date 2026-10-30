@@ -49,6 +49,8 @@ export type ProjectStatus =
 export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export interface ProjectMember {
+  projectsCount: number;
+  createdAt: string;
   id: string;
   name: string;
   email: string;
@@ -87,6 +89,7 @@ export interface CreateProjectRequest {
   description: string;
   priority: ProjectPriority;
   deadline: string | null;
+  memberIds: string[];
 }
 
 export type UpdateProjectRequest = Partial<CreateProjectRequest>;

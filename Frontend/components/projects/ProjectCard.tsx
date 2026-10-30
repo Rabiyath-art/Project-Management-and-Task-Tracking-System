@@ -34,7 +34,7 @@ const priorityLabels: Record<ProjectPriority, string> = {
 function formatDate(date: string) {
     if (!date) return "No deadline";
 
-    const parsedDate = new Date(`${date}T00:00:00`);
+    const parsedDate = new Date(date);
     if (Number.isNaN(parsedDate.getTime())) return "No deadline";
 
     return new Intl.DateTimeFormat("en-IN", {
@@ -136,13 +136,13 @@ export default function ProjectCard({ project, onEdit, onArchive, handleDeletePr
                 </span>
             </div>
 
-            <div className="mt-5">
+            {/* <div className="mt-5">
                 <ProjectProgress
                     value={project.progress}
                     completedTasks={project.completedTaskCount}
                     totalTasks={project.taskCount}
                 />
-            </div>
+            </div> */}
 
             <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
                 <ProjectMembers members={project.members} />
@@ -153,10 +153,10 @@ export default function ProjectCard({ project, onEdit, onArchive, handleDeletePr
                 </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-1.5 text-xs text-brand-muted">
+            {/* <div className="mt-3 flex items-center gap-1.5 text-xs text-brand-muted">
                 <ListTodo size={14} />
                 {project.taskCount} tasks
-            </div>
+            </div> */}
         </article>
     );
 }

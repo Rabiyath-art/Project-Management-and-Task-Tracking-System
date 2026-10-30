@@ -15,7 +15,6 @@ async function startServer() {
       console.log(`Server running at http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
     await prisma.$disconnect();
     process.exit(1);
   }
